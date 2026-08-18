@@ -1,0 +1,15 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+exits = { out = "yard" }
+unless = { out = "phantom" }
+
+[rooms.yard]
+name = "Yard"
+desc = "A yard."
+exits = { in = "hall" }

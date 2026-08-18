@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+"""Plays a world by name from the root of the repository: ./play original"""
+
+import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+
+from cli.play import main
+
+sys.exit(main())

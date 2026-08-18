@@ -1,0 +1,9 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+exits = { north = "nowhere" }

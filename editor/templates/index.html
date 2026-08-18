@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or "Cave" }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>{{ title or "Cave" }}</h1>
+      <p class="source">{{ source }}</p>
+    </div>
+    <nav class="toolbar">
+      <button type="button" id="show-world">World</button>
+      <span id="notice"></span>
+    </nav>
+  </header>
+
+  {% if unparsable %}
+  <p class="unparsable">The world file will not parse: {{ unparsable }}</p>
+  {% endif %}
+
+  <main>
+    <div id="graph"></div>
+    <aside id="panel"></aside>
+  </main>
+
+  <footer id="report">Checking.</footer>
+
+  <script src="{{ url_for('static', filename='cytoscape.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='graph.js') }}"></script>
+</body>
+</html>

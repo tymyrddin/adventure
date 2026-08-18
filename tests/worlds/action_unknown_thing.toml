@@ -1,0 +1,15 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+oneway = true
+
+[actions.wave_ghost]
+verb = "wave"
+noun = "ghost"
+sets = ["waved"]
+message = "The ghost waves back."

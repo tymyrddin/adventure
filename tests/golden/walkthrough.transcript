@@ -1,0 +1,42 @@
+The Old Working
+
+Cave mouth
+
+A low opening in the hillside, timbered on both sides. The timbers sag, and nobody has replaced them.
+The air coming out is colder than the air going in.
+You can see: brass lamp, short shovel.
+Exits: in.
+> take lamp
+Taken.
+> take shovel
+Taken.
+> light lamp
+The wick catches. The light it gives is small, and it is enough.
+> in
+Debris room
+
+Fallen roof, mostly, with the ends of props still sticking out of it. A passage leads down out of the far side, choked with rubble.
+You can see: pile of rubble.
+Exits: out, down.
+> dig rubble
+It comes away in handfuls, and then in a rush. The way down is open.
+> down
+Grotto
+
+Water has been at this one a long while: the walls are grown over with something pale that throws the lamplight back.
+Nothing has been dug here.
+Exits: up.
+> up
+Debris room
+
+Fallen roof, mostly, with the ends of props still sticking out of it. A passage leads down out of the far side, choked with rubble.
+You can see: pile of rubble.
+Exits: out, down.
+> out
+Cave mouth
+
+A low opening in the hillside, timbered on both sides. The timbers sag, and nobody has replaced them.
+The air coming out is colder than the air going in.
+Exits: in.
+> quit
+Goodbye.

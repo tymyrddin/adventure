@@ -1,0 +1,117 @@
+# The standing loop on OT terrain. The shape comes from the first-level leaf pages of
+# red/source/docs/loops/standing/ — footing.md, first-look.md, reach.md — but the words
+# are the game's own. Nothing here is explained to the player; it is shown to them.
+
+[meta]
+title = "I Promise I'm a Qualified Engineer"
+start = "before"
+version = 1
+
+[rooms.before]
+name = "Welcome!"
+desc = "Before games had graphics, voice acting, or helpful arrows, there were adventures made of words. In the 1970s and early 1980s, Colossal Cave Adventure and Zork turned the command line into a place to explore: rooms, puzzles, treasures, traps, and the occasional deeply unhelpful parser. You typed what you wanted to do and waited to find out whether the game understood you. What follows belongs to that tradition: a world in words, entered through a blinking cursor, on the proposition that somewhere in the text there is probably a way forward.\n\nHere, you play to experience the sequence of an attacker's decisions: observe, form a finding, choose a path, turn access into position, see what changed, decide what next. Each command changes the terrain as well as your understanding of it. A useful move opens possibilities; a costly one puts you back where you started; a defensive response can close one route while making another more interesting. The point is not to memorise techniques but to inhabit the loop of observation, movement, consequence, and revision that gives an adversarial operation its shape.\n\n'help' lists what can be done in that place, and the list changes as you move; when stuck, it is the first thing to try. Nothing done here touches anything real.\n\nType 'begin' when ready."
+exits = { begin = "office" }
+
+[rooms.office]
+name = "A shared office, after hours"
+desc = "Nobody else is in. On the far desk a laptop is open and still warm, the chair pushed back rather than tucked under. It has not locked itself yet.\nThe sticker on the lid names a contractor who looks after the water treatment works on the edge of town."
+exits = { in = "disk" }
+
+[rooms.disk]
+name = "The laptop's own files"
+desc = "Two years of being carried about, written down by the laptop without anyone meaning to: where it has been, what it talks to, who it talked to today.\nNone of it leaves the machine. Reading it makes no sound at all."
+exits = { out = "office", down = "wire" }
+things = ["routing_table", "ticket_cache", "project_file", "packet_capture"]
+
+[rooms.wire]
+name = "The plant network"
+desc = "Pumps, valves and level sensors, all talking at once: a reading every few seconds, in plain text, going out to a control room at the works. Nothing in any of it asks who is listening.\nIt has been like this for twenty years."
+dark = true
+exits = { up = "disk", through = "reach" }
+things = ["traffic"]
+
+[rooms.reach]
+name = "What this laptop can actually touch"
+desc = "Most of the plant was never reachable from this desk. What is left is a short list.\nOne machine in the boundary zone answers anybody who asks from the office side. Behind it are the ones that move things. From here they look the same.\nThe quiet way in is to know the plant well enough to belong there. The loud way is to ask the boundary machine directly, and hope it does not mind."
+exits = { down = "historian", after = "response", back = "office" }
+requires = { down = "baseline_taken", after = "alarm_raised" }
+holding = { down = ["routing_table"] }
+unless = { down = "alarm_raised" }
+hidden = ["after"]
+things = ["boundary_box"]
+
+[rooms.response]
+name = "What the control room sees"
+desc = "The alarm brought someone. A session has opened from the works, back down the same line you were quiet on, and for as long as it is open you are looking at the plant the way they look at it: which readings they trust, which alarm they chase first, how long it takes a person to walk to a panel.\nThe historian only ever kept what happened. This is what they think is happening. It is worth more, and it costs you the quiet the historian would have let you keep.\nYou are looking at them. They are looking at the boundary. Neither of you has moved yet."
+exits = { back = "reach" }
+things = ["console"]
+
+[rooms.historian]
+name = "The historian"
+desc = "The machine that writes down what the plant does, so that people who are not standing in it can read it later. Every reading, every alarm, every valve that moved, years deep.\nNothing has asked who you are."
+exits = { up = "reach" }
+
+[things.routing_table]
+name = "routing table"
+desc = "The list of where this laptop sends things. Most of it is what any office machine would have. One line is not: a route somebody added by hand, pointing out of the building at a machine in the plant."
+portable = true
+
+[things.ticket_cache]
+name = "ticket cache"
+desc = "Every door this account opened today, and at what time. Not what it is permitted to open. What it actually did."
+portable = true
+
+[things.project_file]
+name = "project file"
+desc = "Somebody's engineering project, saved during the installation and never tidied away. It names the controllers, says where each one sits in its rack, and keeps two passwords in plain text."
+portable = true
+
+[things.packet_capture]
+name = "packet capture"
+desc = "A listening tool, left on the laptop by whoever last needed one. It reads what crosses the wire and sends nothing of its own."
+portable = true
+light_when = "capture_running"
+
+[things.boundary_box]
+name = "boundary box"
+desc = "The machine in the boundary zone. It answers office-side questions without asking who is asking — but a machine that answers is a machine that logs, and this one faces the control room."
+
+[things.console]
+name = "console"
+desc = "The operator's own view, mirrored back down the open session. Alarms ranked by how often they turn out to be nothing. This one is near the top of that list, which is the only reason you are still watching them instead of the other way round."
+
+[things.traffic]
+name = "the traffic"
+desc = "Readings going one way, instructions going the other, and nothing anywhere asking who is sending them."
+
+[actions.start_capture]
+verb = "start"
+noun = "packet_capture"
+in_room = "wire"
+needs = ["packet_capture"]
+sets = ["capture_running"]
+message = "It starts listening, and sends nothing of its own. What was noise a moment ago is readable."
+
+[actions.probe_boundary]
+verb = "probe"
+noun = "boundary_box"
+in_room = "reach"
+sets = ["alarm_raised"]
+message = "It answers at once, which is the trouble: it answers, and then it tells the control room what it was asked. Somewhere out at the works a line turns red.\nThe quiet way down was quiet because nobody was looking. Now somebody is."
+
+[actions.watch_traffic]
+verb = "watch"
+noun = "traffic"
+in_room = "wire"
+when = ["capture_running"]
+sets = ["baseline_taken"]
+message = "You leave it running and watch a day go past. The same accounts checking in every five minutes. Backups filling the line between one and three in the morning. A shift change at seven, and again at midnight.\nAn ordinary day, written down."
+
+[synonyms]
+get = "take"
+run = "start"
+listen = "watch"
+scan = "probe"
+l = "look"
+x = "examine"
+i = "inventory"

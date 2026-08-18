@@ -1,0 +1,52 @@
+# What the validator and the editor say to an author. These are fixed
+# byte for byte. Not a world's voice: no world overrides them.
+
+# Reported by the validator; any one of them refuses the load.
+[errors]
+exit_unknown_room = "{room}: exit {dir} leads to unknown room {target}"
+room_unknown_thing = "{room}: unknown thing {thing}"
+requires_without_exit = "{room}: requires on {dir}, but no exit {dir}"
+unless_without_exit = "{room}: unless on {dir}, but no exit {dir}"
+holding_without_exit = "{room}: holding on {dir}, but no exit {dir}"
+hidden_without_exit = "{room}: hidden lists {dir}, but no exit {dir}"
+requires_unknown_flag = "{room}: requires flag {flag} which no action sets"
+unless_unknown_flag = "{room}: unless flag {flag} which nothing ever sets"
+thing_placed_twice = "thing {thing} placed in more than one room"
+action_unknown_room = "action {id}: unknown room {room}"
+action_unknown_thing = "action {id}: unknown thing {thing}"
+action_empty_sets = "action {id}: empty sets"
+duplicate_verb_noun = "actions {first} and {second}: duplicate verb-noun pair {verb} {noun}"
+synonym_unknown_target = "synonym {word}: unknown target {target}"
+unknown_key = "unknown key {key} in {path}"
+start_missing = "start room {id} does not exist"
+ending_unknown_flag = "meta.ending is {flag}, which no action sets"
+action_unknown_mark = "action {id}: unknown mark {mark}"
+bad_threshold = "mark {mark}: threshold is {threshold}; it must be more than nothing"
+unsaid = "world says nothing for: {lines}"
+unreachable = "unreachable rooms: {rooms}"
+bad_version = "meta.version is {version}; only 1 is supported"
+missing_key = "missing key {key} in {path}"
+bad_value = "bad value for {key} in {path}"
+bad_id = "bad id {id} in {table}"
+
+# Reported by the validator; the load proceeds.
+[warnings]
+no_exits = "{room}: no exits and not marked oneway"
+thing_unused = "thing {thing}: defined but never placed and never needed"
+mark_unrequired = "mark {mark}: sets {flag}, which nothing requires"
+flag_unrequired = "flag {flag}: set by {action} but never required"
+way_can_shut = "{room}: the way {dir} can shut once {flag} is remembered; the solver assumes you cross it first"
+
+# Refused by the editor before the validator is reached. Read by
+# editor/app.py alone; the engine never prints one.
+# Said by the player at the command line.
+[cli]
+no_such_world = "no world called {name}; content holds: {worlds}"
+
+[editor]
+stale = "File changed on disk since load."
+id_taken = "There is already a {table} called {id}."
+no_such = "There is no {table} called {id}."
+room_in_action = "{room}: action {action} happens there."
+thing_in_action = "{thing}: action {action} uses it."
+bad_request = "The request body is not the shape this route takes."

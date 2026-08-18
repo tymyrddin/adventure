@@ -1,0 +1,60 @@
+[meta]
+title = "The Old Working"
+start = "cave_mouth"
+version = 1
+
+[rooms.cave_mouth]
+name = "Cave mouth"
+desc = "A low opening in the hillside, timbered on both sides. The timbers sag, and nobody has replaced them.\nThe air coming out is colder than the air going in."
+exits = { in = "debris_room" }
+things = ["lamp", "shovel"]
+
+[rooms.debris_room]
+name = "Debris room"
+desc = "Fallen roof, mostly, with the ends of props still sticking out of it. A passage leads down out of the far side, choked with rubble."
+dark = true
+exits = { out = "cave_mouth", down = "grotto" }
+requires = { down = "rubble_cleared" }
+things = ["rubble"]
+
+[rooms.grotto]
+name = "Grotto"
+desc = "Water has been at this one a long while: the walls are grown over with something pale that throws the lamplight back.\nNothing has been dug here."
+exits = { up = "debris_room" }
+things = []
+
+[things.lamp]
+name = "brass lamp"
+desc = "A brass lamp, dented but serviceable."
+portable = true
+light_when = "lamp_lit"
+
+[things.shovel]
+name = "short shovel"
+desc = "Short, and worn down on one side from being swung the same way for years."
+portable = true
+
+[things.rubble]
+name = "pile of rubble"
+desc = "Roof-fall, loose and dry, filling the way down."
+
+[actions.light_lamp]
+verb = "light"
+noun = "lamp"
+needs = ["lamp"]
+sets = ["lamp_lit"]
+message = "The wick catches. The light it gives is small, and it is enough."
+
+[actions.dig_rubble]
+verb = "dig"
+noun = "rubble"
+in_room = "debris_room"
+needs = ["shovel"]
+sets = ["rubble_cleared"]
+message = "It comes away in handfuls, and then in a rush. The way down is open."
+
+[synonyms]
+get = "take"
+l = "look"
+x = "examine"
+i = "inventory"

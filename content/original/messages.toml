@@ -1,0 +1,40 @@
+# Everything the cave says. Terse, dry, and unhelpful in the way the tradition is
+# unhelpful: the room tells you what is there, and nothing tells you what it is for.
+
+[player]
+prompt = "> "
+
+no_such_thing = "There is no {noun} here."
+which_one = "Which do you mean: {things}?"
+unknown_verb = "Unknown verb: {word}."
+no_effect = "That does not work here."
+needs_noun = "{verb} what?"
+needs_direction = "{verb} where?"
+already_done = "Nothing further happens."
+
+taken = "Taken."
+dropped = "Dropped."
+not_portable = "That is going nowhere."
+carrying = "You are carrying: {things}."
+carrying_nothing = "You are carrying nothing."
+you_can_see = "You can see: {things}."
+exits = "Exits: {exits}."
+nothing_special = "Nothing special."
+
+no_way = "There is no way {dir} from here."
+blocked = "The way {dir} is blocked."
+shut = "The way {dir} is closed now."
+pitch_dark = "It is pitch dark."
+too_dark = "It is too dark to see."
+
+saved = "Saved."
+loaded = "Loaded."
+save_mismatch = "That save does not match this world."
+save_missing = "No saved game found."
+goodbye = "Goodbye."
+
+help_exits = "Ways out: {dirs}."
+help_verb = "{verb}: {nouns}."
+help_always = "Always: {verbs}."
+help_short = "Short forms: {short}."
+help_pair = "{short} for {long}"

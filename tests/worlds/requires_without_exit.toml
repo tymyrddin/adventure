@@ -1,0 +1,25 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+exits = { north = "cellar" }
+requires = { south = "opened" }
+
+[rooms.cellar]
+name = "Cellar"
+desc = "A cellar."
+exits = { south = "hall" }
+things = ["door"]
+
+[things.door]
+name = "oak door"
+
+[actions.open_door]
+verb = "open"
+noun = "door"
+sets = ["opened"]
+message = "The door opens."

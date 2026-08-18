@@ -1,0 +1,19 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+oneway = true
+unless = { south = "seen" }
+
+[actions.trip]
+verb = "wave"
+noun = "flag"
+sets = ["seen"]
+message = "Seen."
+
+[things.flag]
+name = "flag"

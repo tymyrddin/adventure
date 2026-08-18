@@ -1,0 +1,62 @@
+# The closed content schema A key in neither list is an error, as is a
+# table not named here. Types are TOML's own names.
+
+top_level = ["meta", "rooms", "things", "actions", "marks", "synonyms"]
+id_chars = "abcdefghijklmnopqrstuvwxyz0123456789_"
+
+# Every line a world must say for itself. There is no shared voice to fall back
+# on: a world that does not say one of these does not load.
+said = [
+    "prompt",
+    "no_such_thing",
+    "which_one",
+    "unknown_verb",
+    "no_effect",
+    "needs_noun",
+    "needs_direction",
+    "already_done",
+    "taken",
+    "dropped",
+    "not_portable",
+    "carrying",
+    "carrying_nothing",
+    "you_can_see",
+    "exits",
+    "nothing_special",
+    "no_way",
+    "blocked",
+    "shut",
+    "pitch_dark",
+    "too_dark",
+    "saved",
+    "loaded",
+    "save_mismatch",
+    "save_missing",
+    "goodbye",
+    "help_exits",
+    "help_verb",
+    "help_always",
+    "help_short",
+    "help_pair",
+]
+
+[meta]
+required = { title = "string", start = "string", version = "integer" }
+optional = { ending = "string" }
+
+[rooms]
+required = { name = "string", desc = "string" }
+optional = { exits = "table", requires = "table", holding = "table", unless = "table", hidden = "array", dark = "boolean", oneway = "boolean", things = "array", x = "integer", y = "integer" }
+
+[things]
+required = { name = "string" }
+optional = { desc = "string", portable = "boolean", light_when = "string" }
+
+[actions]
+required = { verb = "string", noun = "string", sets = "array", message = "string" }
+optional = { in_room = "string", needs = "array", when = "array", once = "boolean", raises = "table", spends = "array" }
+
+# What a move leaves behind. A world names its own: attention, disruption, residue.
+[marks]
+required = { threshold = "integer", sets = "string" }
+optional = { }

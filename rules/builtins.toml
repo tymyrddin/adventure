@@ -1,0 +1,75 @@
+# The engine's fixed vocabulary Content cannot extend it; a world's
+# [synonyms] table maps words onto it. Read by engine/world.py and engine/verbs.py.
+
+# Dropped from a command before it is dispatched.
+articles = ["a", "an", "the"]
+
+# One table per built-in verb, holding everything the parser knows about it.
+# needs_noun: does nothing on its own. dark_blocks: refused by an unlit room.
+# takes_direction: its second word is a direction, not a thing id.
+[verbs.look]
+dark_blocks = true
+
+[verbs.go]
+needs_noun = true
+takes_direction = true
+
+[verbs.take]
+needs_noun = true
+dark_blocks = true
+
+[verbs.drop]
+needs_noun = true
+
+[verbs.examine]
+needs_noun = true
+dark_blocks = true
+
+[verbs.inventory]
+
+[verbs.save]
+
+[verbs.load]
+
+[verbs.quit]
+
+[verbs.help]
+
+# Abbreviations the parser accepts as verbs in their own right.
+[abbreviations]
+l = "look"
+i = "inventory"
+
+# Applied to a direction word before matching a room's exits.
+[directions]
+n = "north"
+s = "south"
+e = "east"
+w = "west"
+u = "up"
+d = "down"
+
+# Paired directions, for the reverse exit the editor makes. Nothing in
+# the engine reads them; they live here because vocabulary does not belong in code.
+[opposites]
+north = "south"
+south = "north"
+east = "west"
+west = "east"
+up = "down"
+down = "up"
+in = "out"
+out = "in"
+
+# Which way a direction points when the editor draws it, as unit steps with y growing
+# downward. Anything absent here is drawn below its source.
+[offsets]
+north = [0, -1]
+south = [0, 1]
+east = [1, 0]
+west = [-1, 0]
+
+# The world's own content, and the save written beside it.
+[files]
+world = "world.toml"
+save = "save.json"

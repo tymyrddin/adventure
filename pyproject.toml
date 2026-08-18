@@ -1,0 +1,44 @@
+[project]
+name = "cave"
+version = "1.0.0"
+description = "A deterministic, data-driven text adventure in the Adventure (1976) tradition."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "flask",   # editor only
+    "tomlkit", # editor only, for round-trip writing
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "mypy"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 95
+target-version = "py312"
+exclude = [".claude"]
+# The launcher has no .py extension, so ruff has to be told it is Python.
+extend-include = ["play"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "SIM", "UP", "PERF", "RUF"]
+# House style rather than oversight: plain loops and list concatenation both read
+# better here than the comprehension and unpacking ruff would rather have.
+ignore = ["PERF401", "RUF005"]
+
+[tool.mypy]
+python_version = "3.12"
+# 14 files check in under three seconds, so the cache buys little and costs an
+# 8MB directory and the chance of a stale answer.
+cache_dir = "/dev/null"
+files = ["engine", "cli", "editor", "tools", "tests"]
+explicit_package_bases = true
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+# The code carries no annotations by choice, so asking for one on every empty list
+# and set would be the tail wagging the dog. Everything mypy can infer is checked.
+disable_error_code = ["var-annotated"]

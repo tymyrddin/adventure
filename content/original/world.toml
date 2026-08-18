@@ -1,0 +1,168 @@
+[meta]
+title = "Under the Hill"
+start = "before"
+version = 1
+ending = "bell_rung"
+
+[rooms.before]
+name = "Welcome!"
+desc = "Zork is a classic text adventure. There are no graphics: the game describes where you are, what you can see, and what is happening, and you type commands such as 'look', 'take lamp', or 'open door' to explore and interact with the world.\n\nThe fun is in figuring out what the world is trying to tell you. Examine things, try things, keep track of objects and clues, and don't assume that something described as useless actually is. The game may understand more than you expect, although occasionally it may also respond with the digital equivalent of a raised eyebrow.\n\nType 'begin' when you are ready."
+exits = { begin = "cave_mouth" }
+
+[rooms.cave_mouth]
+name = "Cave mouth"
+desc = "A cave mouth in the side of the hill, wide enough to walk into upright. A cold wind comes steadily out of it.\nThe bracken at the entrance has been trodden flat."
+exits = { in = "first_chamber" }
+things = ["brass_lamp"]
+
+[rooms.first_chamber]
+name = "First chamber"
+desc = "Rock and splintered timber underfoot, all of it fallen from somewhere above. The chamber narrows to a crawl going north, and to a wet slot going west."
+dark = true
+exits = { out = "cave_mouth", north = "rope_room", west = "blue_pool" }
+
+[rooms.blue_pool]
+name = "Blue pool"
+desc = "A pool the colour of old glass, and about as inviting. Nothing lives in it.\nSomething has been left on the lip of the rock, well above the waterline."
+dark = true
+exits = { east = "first_chamber" }
+things = ["tin_whistle"]
+
+[rooms.rope_room]
+name = "Rope room"
+desc = "A round room with a hole in the middle of the floor and iron rings set round the edge of it. Somebody meant to come back.\nThe hole goes down further than the light does."
+dark = true
+exits = { south = "first_chamber", down = "shaft" }
+holding = { down = ["coil_of_rope"] }
+things = ["coil_of_rope"]
+
+[rooms.shaft]
+name = "Shaft"
+desc = "The rope ends here, on a ledge cut square out of the rock. Below it the shaft goes on.\nThere is old machinery in the walls: brackets, a cable, and the shape of something that used to move up and down."
+dark = true
+exits = { up = "rope_room", down = "lift_platform" }
+
+[rooms.lift_platform]
+name = "Lift platform"
+desc = "A platform of riveted plate, hanging in the shaft on a cable that goes up into the dark.\nIt does not move when you do."
+dark = true
+exits = { up = "shaft", down = "abandoned_station" }
+requires = { down = "lift_lowered" }
+things = ["iron_lever"]
+
+[rooms.abandoned_station]
+name = "Abandoned station"
+desc = "A platform, a bench, and a board giving the times of things that no longer run. The tunnel at the end has been bricked up, neatly, from this side.\nSomebody slept here once. Not recently."
+dark = true
+exits = { up = "lift_platform", along = "city" }
+things = ["folded_map"]
+
+[rooms.city]
+name = "City"
+desc = "A street of cut stone under a roof of the same, with lamps at intervals that are somehow still burning. Nobody is in it.\nWays lead north, east and south, and all of them have been swept."
+exits = { back = "abandoned_station", north = "market", east = "museum", south = "river" }
+
+[rooms.market]
+name = "Market"
+desc = "Stalls of stone, worn hollow in the middle where things were counted out for long enough to wear stone.\nEvery one of them is empty except the last."
+exits = { south = "city" }
+things = ["black_stone"]
+
+[rooms.museum]
+name = "Museum"
+desc = "Cases of glass and brass, most of them broken into from the inside.\nOne case is intact, and open."
+exits = { west = "city" }
+things = ["brass_bell"]
+
+[rooms.river]
+name = "River"
+desc = "Black water going fast and quiet from wall to wall. A ledge runs along the near side, wet to the ankle.\nAcross the water there is an opening."
+exits = { north = "city", across = "chamber_of_voices" }
+
+[rooms.chamber_of_voices]
+name = "Chamber of voices"
+desc = "A round chamber, and the moment you stop moving you can hear it: many voices, quiet, none of them in a language you speak.\nThey stop while you talk. They start again when you do not.\nA stair goes up. The voices are loudest at the foot of it."
+dark = true
+exits = { back = "river", up = "stairs" }
+requires = { up = "voices_answered" }
+
+[rooms.stairs]
+name = "Stairs"
+desc = "Steps cut for something with a longer stride than yours, turning up and up for a good deal longer than the hill is tall."
+exits = { down = "chamber_of_voices", up = "mountain" }
+
+[rooms.mountain]
+name = "Mountain"
+desc = "Open air, and the top of the hill, with the bracken and the cave mouth somewhere below.\nThe stone underfoot here is flat, and level, and has been swept."
+exits = { down = "stairs" }
+
+[things.brass_lamp]
+name = "brass lamp"
+desc = "A brass lamp, dented but serviceable."
+portable = true
+light_when = "lamp_lit"
+
+[things.tin_whistle]
+name = "tin whistle"
+desc = "Cheap tin gone green with age. One hole, and no tune in it."
+portable = true
+
+[things.coil_of_rope]
+name = "coil of rope"
+desc = "Hemp, stiff with age, and long enough for the hole in the floor. One end is worn where it has already taken a weight."
+portable = true
+
+[things.iron_lever]
+name = "iron lever"
+desc = "Set in the rail and worn smooth by hands. It has two positions and is in the upper one."
+
+[things.folded_map]
+name = "folded map"
+desc = "Drawn by somebody who had been where it shows. The city is on it. So is the top of the hill, marked with a ring."
+portable = true
+
+[things.black_stone]
+name = "black stone"
+desc = "Smooth, and warmer than the market around it. There is a hole through it, off centre."
+portable = true
+
+[things.brass_bell]
+name = "brass bell"
+desc = "Small, and heavier than it looks. The clapper is gone, and the hole it hung from is off centre."
+portable = true
+
+[actions.light_lamp]
+verb = "light"
+noun = "brass_lamp"
+needs = ["brass_lamp"]
+sets = ["lamp_lit"]
+message = "The lamp sputters, then burns steadily."
+
+[actions.pull_lever]
+verb = "pull"
+noun = "iron_lever"
+in_room = "lift_platform"
+sets = ["lift_lowered"]
+message = "The lever goes over with a sound like a dropped anvil. Somewhere above, something lets go, and the platform starts down."
+
+[actions.blow_whistle]
+verb = "blow"
+noun = "tin_whistle"
+in_room = "chamber_of_voices"
+needs = ["tin_whistle"]
+sets = ["voices_answered"]
+message = "One note, thin and flat, and not much of a note at that. The voices stop.\nWhen they start again they are all saying the same thing, and none of them is at the foot of the stair."
+
+[actions.ring_bell]
+verb = "ring"
+noun = "brass_bell"
+in_room = "mountain"
+needs = ["brass_bell", "black_stone"]
+sets = ["bell_rung"]
+message = "The stone goes into the bell as though it had been cut for it, which it was.\nThe note is not loud. It goes down through the hill and comes back up through your boots, and a long way below a great deal of stone settles, and is quiet.\nYou have been under the hill, and you are out of it."
+
+[synonyms]
+get = "take"
+l = "look"
+x = "examine"
+i = "inventory"

@@ -1,0 +1,20 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+oneway = true
+things = ["bell"]
+
+[things.bell]
+name = "bell"
+
+[actions.ring_bell]
+verb = "ring"
+noun = "bell"
+sets = ["rung"]
+raises = { attention = 1 }
+message = "It rings."

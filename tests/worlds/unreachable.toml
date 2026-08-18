@@ -1,0 +1,19 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+exits = { north = "pantry" }
+
+[rooms.pantry]
+name = "Pantry"
+desc = "A pantry."
+exits = { south = "hall" }
+
+[rooms.cellar]
+name = "Cellar"
+desc = "A cellar."
+oneway = true

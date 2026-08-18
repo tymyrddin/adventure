@@ -1,14 +1,189 @@
-# Loops
+# Adventures
 
-Loops is an experimental text adventure about how attackers think.
+A text adventure engine in the tradition of Colossal Cave and Zork. You type what you want to do, the game describes
+what happens, and the world keeps track of the consequences.
 
-It is not a hacking simulator. There are no exploit chains to memorise and no magic path to root. Instead, the game 
-begins an uncertain footing, an incomplete picture, and a world that slowly reveals itself through observation and 
-exploration.
+Two worlds are included, more will follow.
 
-Every decision changes what comes next. New positions open new possibilities. Old routes become noisy, expensive, or 
-quietly burn away as the defender learns alongside the player. The challenge is not collecting the most access, but 
-deciding what is worth spending, what is worth protecting, and when enough is enough.
+`original` is a cave adventure. You go under a hill, and work out how things fit together.
 
-The project explores a simple idea: perhaps the best way to learn adversarial thinking is not by reading about it, but 
-by experiencing it.
+`ot` is an operational technology network. You play through an attacker's evening at a water plant, adventure style: 
+observing the network, taking a copy of something, discovering what normal looks like, and that being noticed changes 
+what is possible.
+
+## Playing
+
+From the repository root:
+
+```text
+./play original
+./play ot
+```
+
+You can also pass a world directory directly:
+
+```text
+python -m cli.play content/original
+```
+
+An unrecognised world name lists the available worlds.
+
+Type `begin` to start. From there, use the basic vocabulary, which looks like this:
+
+```text
+help
+look
+take lamp
+go in
+examine key
+i
+l
+save
+load
+quit
+```
+
+`help` is contextual. It tells you what you can do where you are. The available actions can change as the game 
+progresses, so `help` is a useful move when you are stuck.
+
+Object names do not need to be exact. If the room contains one thing matching `brass lamp`, `take brass lamp` is 
+enough.
+
+## Worlds
+
+The engine provides the rules. The worlds provide the content. A world is a directory containing two files:
+
+```text
+world.toml
+messages.toml
+```
+
+`world.toml` contains the structure and rules of the world: rooms, objects, exits and actions.
+
+`messages.toml` contains the texts presented to a player. 
+
+A world can define:
+
+* rooms and exits
+* portable objects
+* flags recording things that have happened
+* exits gated by remembered flags or objects currently held
+* exits that close when a particular flag is set
+* dark rooms that require a light source to be described
+* `marks`, which accumulate as the player acts and can set flags at thresholds
+* `spends`, which consume objects when they are used
+* an ending, reached when the world records the required state
+
+`marks` provide a simple way to model accumulating consequences. An action can increase several marks at once. 
+Crossing a threshold can change the available world.
+
+The `rules/` directory contains the parts shared by every world: built-in verbs, the content schema, and the vocabulary
+used by the authoring tools. The tooling's language is kept separate from the messages shown to players.
+
+## Authoring and expanding
+
+The repository includes a map editor. It displays a world as a graph and provides an editor for each room, including:
+
+* name and description
+* exits and their conditions
+* darkness
+* objects
+* actions
+
+Marks and the ending are configured at world level.
+
+The editor works with names and readable flags. Saves are validated before being
+written using atomic writes, so the editor does not leave behind a world that the engine cannot load.
+
+Start it with:
+
+```text
+.venv/bin/flask --app "editor.app:create_app('content/ot')" run --debug
+```
+
+The editor is intended as a local, single-author tool. There is no authentication.
+
+The TOML files are also designed to be readable and editable by hand.
+
+## Setup
+
+The project uses Python 3.12.
+
+The engine and CLI use only the standard library. The editor adds Flask and tomlkit.
+
+Create a virtual environment and install the development dependencies:
+
+```text
+python3.12 -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+```
+
+Commands are run from the repository root.
+
+## Tests
+
+Run the main checks with:
+
+```text
+.venv/bin/pytest
+.venv/bin/ruff check .
+.venv/bin/mypy
+```
+
+The test suite is primarily concerned with behaviour. Room descriptions can be rewritten without
+changing the tests. The suite checks things such as:
+
+* gates opening and closing under the right conditions
+* marks crossing their thresholds
+* actions firing once
+* objects being consumed correctly
+* the parser resolving player commands
+* invalid world data being rejected
+
+The golden transcript is the exception. It exercises a complete game and checks the resulting output byte for
+byte. Regenerating it is therefore an explicit change, not something the test suite does automatically.
+
+The world used by the transcript lives with the tests, so changes to authored worlds do not
+alter the behavioural fixture.
+
+There is also a browser harness under `tools/harness/`. It drives the actual map editor in a real browser, covering the
+JavaScript that is not exercised by the Python tests. It requires Node and a browser. If either is unavailable, the 
+browser harness is skipped.
+
+## Layout
+
+```text
+content/   worlds: original (cave), ot (plant)
+rules/     shared built-ins, schema and authoring vocabulary
+engine/    world loading, validation, state, data and verbs
+cli/       command line player and ./play launcher
+editor/    map editor, writer, templates and static assets
+tests/     behavioural tests, validators, transcript and fixtures
+tools/     browser harness
+```
+
+If you are looking at the engine, start with `engine/verbs.py`.
+
+The client interface is deliberately small:
+
+```python
+perform(world, game, line)
+describe(world, game)
+```
+
+`perform` takes a world, the current game state and a player command, and returns the resulting output.
+
+`describe` returns the player's current view of the world.
+
+The `world` is the authored content and rules. It does not change during play.
+
+The `game` is the mutable state: location, inventory, remembered flags and the contents of rooms.
+
+That separation is the core of the engine. A client needs the world and the current game state. Everything else is
+implementation detail.
+
+## Intent
+
+The central idea behind non-original worlds is simple: a useful move can open several possibilities; a costly move 
+can leave the player somewhere less useful; and a defensive response can close one route while making another more 
+interesting.

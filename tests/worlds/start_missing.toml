@@ -1,0 +1,9 @@
+[meta]
+title = "Broken"
+start = "void"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+oneway = true

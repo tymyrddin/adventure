@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.idea/
+
+# Written by the CLI beside the world file.
+save.json
+
+INTENT.md

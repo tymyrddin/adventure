@@ -1,0 +1,279 @@
+/* One stylesheet, no framework. Plain enough to argue with. */
+
+body {
+  margin: 0;
+  padding: 0 1.5rem 1rem;
+  font: 15px/1.5 system-ui, sans-serif;
+  color: #241f1a;
+  background: #fdfcfa;
+}
+
+header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0 0.75rem;
+  border-bottom: 1px solid #ddd6ca;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6d655a;
+}
+
+h3 {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6d655a;
+}
+
+.source {
+  margin: 0.2rem 0 0;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: #6d655a;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+#notice {
+  font-size: 0.85rem;
+  color: #8f4436;
+}
+
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 23rem;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+@media (max-width: 62rem) {
+  main { grid-template-columns: 1fr; }
+}
+
+#graph {
+  height: 34rem;
+  border: 1px solid #ddd6ca;
+  border-radius: 3px;
+  background: #fff;
+}
+
+#panel {
+  height: 34rem;
+  overflow-y: auto;
+  padding: 0.9rem 1rem;
+  border: 1px solid #ddd6ca;
+  border-radius: 3px;
+  background: #fff;
+}
+
+#report {
+  padding: 0.75rem 0 1rem;
+  border-top: 1px solid #ddd6ca;
+  font-size: 0.9rem;
+}
+
+#report h3 { margin-top: 0.5rem; }
+
+ul, ol {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+li { margin-bottom: 0.15rem; }
+
+code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  color: #6d655a;
+  text-transform: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.row > span {
+  padding-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #6d655a;
+}
+
+.away { display: none; }
+
+.row .fixed {
+  display: inline-block;
+  padding: 0.3rem 0;
+}
+
+input[type="text"], textarea, select {
+  width: 100%;
+  padding: 0.25rem 0.35rem;
+  border: 1px solid #ddd6ca;
+  border-radius: 2px;
+  font: inherit;
+  font-size: 0.9rem;
+  background: #fff;
+  color: inherit;
+}
+
+textarea { resize: vertical; }
+
+input[type="checkbox"] { width: auto; }
+
+.exit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.3rem;
+  padding: 0.3rem;
+  border: 1px solid #eee8dd;
+  border-radius: 2px;
+}
+
+.exit.chosen {
+  border-color: #2f6ea8;
+  background: #eef4fa;
+}
+
+.exit [data-field="dir"] { width: 5rem; }
+.exit [data-field="gate"] { width: 7rem; }
+.exit select { width: auto; flex: 1 1 7rem; }
+.exit label { font-size: 0.8rem; white-space: nowrap; }
+.exit .ticks { flex: 1 1 8rem; }
+.exit > label { flex: 1 1 100%; }
+
+.tag {
+  font-size: 0.78rem;
+  color: #6d655a;
+  white-space: nowrap;
+}
+.exit button { margin-left: auto; }
+
+.tick {
+  display: block;
+  font-size: 0.85rem;
+}
+
+.tickrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.tickrow .tick { flex: 1; }
+
+.tickrow button {
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+}
+
+.record {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #ddd6ca;
+  border-radius: 3px;
+  background: #faf8f3;
+  font-size: 0.9rem;
+}
+
+.hint {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #6d655a;
+}
+
+.what {
+  margin: 0 0 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6d655a;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.dock {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  padding: 0.6rem 0;
+  background: #fff;
+  border-top: 1px solid #ddd6ca;
+}
+
+button {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid #c8c0b2;
+  border-radius: 2px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: inherit;
+  background: #f4f1ea;
+  cursor: pointer;
+}
+
+button:hover { background: #ece7dc; }
+
+button.danger {
+  border-color: #d3aca3;
+  color: #8f4436;
+}
+
+em {
+  font-style: normal;
+  font-size: 0.75rem;
+  color: #46603c;
+}
+
+.empty {
+  margin: 0.3rem 0;
+  font-size: 0.85rem;
+  color: #6d655a;
+}
+
+.unparsable {
+  margin: 1rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid #b4756a;
+  background: #f8ece9;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+}
+
+.errors { color: #8f4436; }
+.warnings { color: #7a6420; }
+.clean { color: #46603c; }

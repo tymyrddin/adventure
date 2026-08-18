@@ -1,0 +1,20 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+exits = { north = "cellar" }
+things = ["lamp"]
+
+[rooms.cellar]
+name = "Cellar"
+desc = "A cellar."
+exits = { south = "hall" }
+things = ["lamp"]
+
+[things.lamp]
+name = "brass lamp"
+portable = true
