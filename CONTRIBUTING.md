@@ -61,6 +61,12 @@ hand when you touch the editor front end:
 node --experimental-websocket tools/harness/check.mjs
 ```
 
+## Conduct and reporting
+
+Taking part here means keeping to the [code of conduct](CODE_OF_CONDUCT.md). If you find a
+security problem in the engine or the editor, do not open a public issue; the
+[security policy](SECURITY.md) explains how to report it privately.
+
 ## Licensing
 
 The engine and tooling are under the MIT Licence (`LICENCE`). The authored worlds under
