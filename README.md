@@ -158,7 +158,7 @@ If you are looking at the engine, start with `engine/verbs.py`.
 
 The client interface is deliberately small:
 
-```python
+```text
 perform(world, game, line)
 describe(world, game)
 ```
