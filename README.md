@@ -1,5 +1,10 @@
 # Adventures
 
+[![CI](https://github.com/tymyrddin/adventure/actions/workflows/ci.yml/badge.svg)](https://github.com/tymyrddin/adventure/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![Code licence: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENCE)
+[![Worlds licence: CC BY 4.0](https://img.shields.io/badge/worlds-CC%20BY%204.0-blue.svg)](content/LICENCE)
+
 A text adventure engine in the tradition of Colossal Cave and Zork. You type what you want to do, the game describes
 what happens, and the world keeps track of the consequences.
 
@@ -42,7 +47,7 @@ are stuck.
 
 ## Worlds
 
-The engine provides the rules. The worlds provide the content. A world is a directory containing two files:
+A world is a directory containing two files:
 
 ```text
 world.toml
@@ -179,3 +184,15 @@ implementation detail.
 The central idea behind non-original worlds is simple: a useful move can open several possibilities; a costly move
 can leave the player somewhere less useful; and a defensive response can close one route while making another more
 interesting.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the three checks that CI runs, and the conventions this repository
+keeps.
+
+## Licence
+
+This repository is licensed in two parts. The engine and tooling are under the [MIT Licence](LICENCE). The authored
+worlds under `content/`, being creative content rather than code, are under [Creative Commons Attribution
+4.0](content/LICENCE). Both let you build on the work with attribution; the split simply lets the code and the worlds
+be reused on their own terms.

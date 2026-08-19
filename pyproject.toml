@@ -1,15 +1,40 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "cave"
 version = "1.0.0"
 description = "A deterministic, data-driven text adventure in the Adventure (1976) tradition."
+readme = "README.md"
+# The engine and tooling are MIT; the authored worlds under content/ are CC BY 4.0
+# (see content/LICENCE). This field names the licence of the installable package.
+license = "MIT"
+license-files = ["LICENCE"]
+authors = [{ name = "ninabarzh", email = "30133030+ninabarzh@users.noreply.github.com" }]
 requires-python = ">=3.12,<3.13"
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Games/Entertainment",
+    "Environment :: Console",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "flask",   # editor only
     "tomlkit", # editor only, for round-trip writing
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "mypy"]
+dev = ["pytest", "ruff", "mypy", "pre-commit"]
+
+[project.urls]
+Homepage = "https://github.com/tymyrddin/adventure"
+Repository = "https://github.com/tymyrddin/adventure.git"
+
+# The installable packages. rules/ and content/ are data the code reads from the
+# source tree, and tools/ is a dev-only harness, so none of them is packaged here.
+[tool.setuptools]
+packages = ["engine", "cli", "editor"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

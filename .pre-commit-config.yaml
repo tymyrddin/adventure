@@ -1,0 +1,22 @@
+# Local hooks run the same checks CI runs, before a commit lands. pre-commit manages
+# each tool in its own pinned, isolated environment, so the hooks work whether or not a
+# virtualenv is active. The pins are held to the versions in the dev environment so the
+# hooks and CI stay in step; bump them deliberately, or with:  pre-commit autoupdate
+#
+# The tests (and the JavaScript lint that rides in them) are not run here: they belong at
+# push time, in CI, not on every commit. Run them by hand with pytest.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.3
+    hooks:
+      - id: ruff-check
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.3.1
+    hooks:
+      - id: mypy
+        # mypy needs the project's third-party imports to type-check the editor and the
+        # tests; pre-commit installs them into the hook's own environment. It runs over
+        # the files named in pyproject rather than only the staged ones, matching CI.
+        additional_dependencies: [flask, tomlkit, pytest]
+        pass_filenames: false
