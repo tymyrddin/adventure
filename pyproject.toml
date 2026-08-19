@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cave"
-version = "1.0.0"
-description = "A deterministic, data-driven text adventure in the Adventure (1976) tradition."
+version = "0.1.0"
+description = "A data-driven text adventure in the Adventure (1976) tradition."
 readme = "README.md"
 # The engine and tooling are MIT; the authored worlds under content/ are CC BY 4.0
 # (see content/LICENCE). This field names the licence of the installable package.
