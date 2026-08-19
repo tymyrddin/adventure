@@ -1,5 +1,5 @@
 # The standing loop on OT terrain. The shape comes from the first-level leaf pages of
-# red/source/docs/loops/standing/ — footing.md, first-look.md, reach.md — but the words
+# red/source/docs/loops/standing/ (footing.md, first-look.md, reach.md), but the words
 # are the game's own. Nothing here is explained to the player; it is shown to them.
 
 [meta]
@@ -36,7 +36,7 @@ desc = "Most of the plant was never reachable from this desk. What is left is a 
 exits = { down = "historian", after = "response", back = "office" }
 requires = { down = "baseline_taken", after = "alarm_raised" }
 holding = { down = ["routing_table"] }
-unless = { down = "alarm_raised" }
+unless = { down = "alarm_raised", after = "session_closed" }
 hidden = ["after"]
 things = ["boundary_box"]
 
@@ -44,7 +44,7 @@ things = ["boundary_box"]
 name = "What the control room sees"
 desc = "The alarm brought someone. A session has opened from the works, back down the same line you were quiet on, and for as long as it is open you are looking at the plant the way they look at it: which readings they trust, which alarm they chase first, how long it takes a person to walk to a panel.\nThe historian only ever kept what happened. This is what they think is happening. It is worth more, and it costs you the quiet the historian would have let you keep.\nYou are looking at them. They are looking at the boundary. Neither of you has moved yet."
 exits = { back = "reach" }
-things = ["console"]
+things = ["console", "alarm"]
 
 [rooms.historian]
 name = "The historian"
@@ -74,7 +74,7 @@ light_when = "capture_running"
 
 [things.boundary_box]
 name = "boundary box"
-desc = "The machine in the boundary zone. It answers office-side questions without asking who is asking — but a machine that answers is a machine that logs, and this one faces the control room."
+desc = "The machine in the boundary zone. It answers office-side questions without asking who is asking, but a machine that answers is a machine that logs, and this one faces the control room."
 
 [things.console]
 name = "console"
@@ -83,6 +83,10 @@ desc = "The operator's own view, mirrored back down the open session. Alarms ran
 [things.traffic]
 name = "the traffic"
 desc = "Readings going one way, instructions going the other, and nothing anywhere asking who is sending them."
+
+[things.alarm]
+name = "alarm"
+desc = "The line that turned red when you asked the boundary machine its question, sitting near the top of their list now, waiting to be chased or put down. Watching it costs nothing. Reaching for it would be the first thing you have done on their side of the line rather than your own."
 
 [actions.start_capture]
 verb = "start"
@@ -107,11 +111,20 @@ when = ["capture_running"]
 sets = ["baseline_taken"]
 message = "You leave it running and watch a day go past. The same accounts checking in every five minutes. Backups filling the line between one and three in the morning. A shift change at seven, and again at midnight.\nAn ordinary day, written down."
 
+[actions.clear_alarm]
+verb = "clear"
+noun = "alarm"
+in_room = "response"
+sets = ["session_closed"]
+goes = "office"
+message = "You put the alarm down. It goes quiet in their list, exactly as it would have if they had done it, and that is the tell. Watching sent nothing back up the line. This did.\nThe session closes from the far end, all at once. You are back where you started, on the wrong side of a door you opened yourself, and the way back through the boundary will not open a second time."
+
 [synonyms]
 get = "take"
 run = "start"
 listen = "watch"
 scan = "probe"
+dismiss = "clear"
 l = "look"
 x = "examine"
 i = "inventory"

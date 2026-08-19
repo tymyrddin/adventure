@@ -18,6 +18,7 @@ CASES = [
     ("requires_unknown_flag.toml", "hall: requires flag opened which no action sets"),
     ("thing_placed_twice.toml", "thing lamp placed in more than one room"),
     ("action_unknown_room.toml", "action open_door: unknown room cellar"),
+    ("goes_unknown_room.toml", "action open_door: goes to unknown room cellar"),
     ("action_unknown_thing.toml", "action wave_ghost: unknown thing ghost"),
     ("action_empty_sets.toml", "action open_door: empty sets"),
     ("duplicate_verb_noun.toml",

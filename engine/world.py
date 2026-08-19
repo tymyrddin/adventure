@@ -68,13 +68,20 @@ def reachable_from(world, origin):
     seen = {origin} if origin in rooms else set()
     queue = list(seen)
     while queue:
-        room = rooms.get(queue.pop(0), {})
+        name = queue.pop(0)
+        room = rooms.get(name, {})
         exits = _get(room, "exits", {}) if isinstance(room, dict) else {}
-        for target in exits.values():
+        for target in list(exits.values()) + _goes_from(world, name):
             if target in rooms and target not in seen:
                 seen.add(target)
                 queue.append(target)
     return seen
+
+
+def _goes_from(world, name):
+    """Return where the actions that can fire in this room send the player."""
+    return [_get(action, "goes", "") for _id, action in _records(world, "actions")
+            if action.get("in_room") in (None, name)]
 
 
 def solvable(world):
@@ -118,7 +125,8 @@ def _open_rooms(world, rooms, flags, things):
 
 
 def _fire_actions(world, rooms, flags, things):
-    """Add the flags of every action whose room, needs and when conditions are known."""
+    """Add what firing actions leave behind: their flags, and any room goes reaches."""
+    all_rooms = _table(world, "rooms")
     for _id, action in _records(world, "actions"):
         in_room = action.get("in_room")
         if in_room is not None and in_room not in rooms:
@@ -128,6 +136,9 @@ def _fire_actions(world, rooms, flags, things):
         if not set(_get(action, "when", [])) <= flags:
             continue
         flags.update(_get(action, "sets", []))
+        goes = _get(action, "goes", "")
+        if goes in all_rooms:
+            rooms.add(goes)
 
 
 def _flag_order(world):
@@ -235,6 +246,9 @@ def _check_actions(world, words, errors):
         in_room = action.get("in_room")
         if in_room is not None and in_room not in rooms:
             errors.append(_error(words, "action_unknown_room", id=name, room=in_room))
+        goes = action.get("goes")
+        if goes is not None and goes not in rooms:
+            errors.append(_error(words, "goes_unknown_room", id=name, room=goes))
         noun = _get(action, "noun", "")
         for thing in [noun] + _get(action, "needs", []) + _get(action, "spends", []):
             if thing and thing not in things:

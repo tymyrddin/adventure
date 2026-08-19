@@ -56,6 +56,19 @@ const STYLE = [
   { selector: "edge[?both]", style: { "source-arrow-shape": "triangle" } },
   { selector: "edge[?gate]", style: { "line-style": "dashed" } },
   { selector: "edge[?hidden]", style: { "line-style": "dotted" } },
+  {
+    selector: "edge[?goes]",
+    style: {
+      "line-color": "#b4756a",
+      "target-arrow-color": "#b4756a",
+      "line-style": "dashed",
+      "curve-style": "unbundled-bezier",
+      "control-point-distances": [40],
+      "control-point-weights": [0.5],
+      "font-style": "italic",
+      "color": "#8a5a4f",
+    },
+  },
 ];
 
 const state = {
@@ -125,8 +138,14 @@ function drawMap() {
     cy.$id(state.room).select();
   }
   cy.on("tap", "node", (event) => pick(event.target.id(), null));
-  cy.on("tap", "edge", (event) => pick(event.target.data("source"),
-                                       event.target.data("dir")));
+  cy.on("tap", "edge", (event) => {
+    const edge = event.target;
+    if (edge.data("goes")) {
+      pickAction(edge.data("source"), edge.data("action"));
+    } else {
+      pick(edge.data("source"), edge.data("dir"));
+    }
+  });
   cy.on("dragfree", "node", (event) => remember(event.target));
 }
 
@@ -174,6 +193,23 @@ function elements(graph) {
     }
     edges.push(drawing);
   });
+  (graph.goes || []).forEach((move, index) => {
+    if (!move.from) {
+      return;
+    }
+    edges.push({
+      data: {
+        id: `g${index}`,
+        source: move.from,
+        target: move.to,
+        dir: move.verb,
+        label: move.verb,
+        action: move.action,
+        goes: true,
+        both: false,
+      },
+    });
+  });
   return nodes.concat(edges);
 }
 
@@ -181,6 +217,17 @@ function pick(room, direction) {
   state.room = room;
   state.exit = direction;
   state.action = null;
+  state.thing = null;
+  state.view = "room";
+  cy.$("node:selected").unselect();
+  cy.$id(room).select();
+  drawPanel();
+}
+
+function pickAction(room, action) {
+  state.room = room;
+  state.exit = null;
+  state.action = action;
   state.thing = null;
   state.view = "room";
   cy.$("node:selected").unselect();
@@ -519,7 +566,7 @@ function actionForm(id) {
   const conditioned = (made, record) => Boolean(made)
     && (record.in_room !== undefined || (record.needs || []).length
         || (record.when || []).length || record.once === false
-        || (record.spends || []).length
+        || (record.spends || []).length || record.goes !== undefined
         || Object.keys(record.raises || {}).length);
   return `
     <div class="record" data-form="action" data-id="${escape(id)}">
@@ -540,6 +587,8 @@ function actionForm(id) {
         ${row("Remembered as", text("sets", (action.sets || []).join(", "),
                                     "flags", "named after the action itself"))}
         ${row("Uses up", spendBoxes(action.spends || []))}
+        ${row("Then sends you to", choose("goes", Object.keys(table("rooms")),
+                            action.goes, "nowhere, you stay put", "rooms"))}
         ${raisesRows(action.raises || {})}
       </div>
       <div class="buttons">
@@ -706,6 +755,9 @@ function actionRecord(scope) {
   };
   if (value(scope, "in_room")) {
     record.in_room = value(scope, "in_room");
+  }
+  if (value(scope, "goes")) {
+    record.goes = value(scope, "goes");
   }
   if (!checked(scope, "once")) {
     record.once = false;

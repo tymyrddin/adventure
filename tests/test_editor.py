@@ -82,6 +82,7 @@ def test_graph_route_describes_the_map(client):
         {"from": "grotto", "to": "debris_room", "dir": "up", "gate": None,
          "holds": None, "hidden": False, "shuts": None, "pair": None},
     ]
+    assert graph["goes"] == []
 
 
 def test_a_hidden_exit_is_not_paired_with_its_reverse(client):
@@ -364,6 +365,51 @@ def test_deleting_a_room_an_action_happens_in_is_refused(tmp_path):
     assert response.status_code == 409
     assert response.get_json()["errors"] == [
         "attic: action open_box happens there."]
+
+
+SENDS = ('[meta]\ntitle = "A"\nstart = "hall"\nversion = 1\n\n'
+         '[rooms.hall]\nname = "Hall"\ndesc = "A hall."\noneway = true\n'
+         'things = ["box"]\n\n'
+         '[rooms.attic]\nname = "Attic"\ndesc = "An attic."\noneway = true\n\n'
+         '[things.box]\nname = "box"\n\n'
+         '[actions.open_box]\nverb = "open"\nnoun = "box"\nin_room = "hall"\n'
+         'goes = "attic"\nsets = ["opened"]\nmessage = "Open."\n')
+
+
+def test_graph_lists_where_an_action_sends_the_player(tmp_path):
+    """An action's goes draws its own edge, from the room it fires in to the one it reaches."""
+    graph = _client(lay_out(tmp_path, SENDS)).get("/api/graph").get_json()
+    assert graph["goes"] == [
+        {"from": "hall", "to": "attic", "verb": "open", "action": "open_box"}]
+
+
+def test_deleting_a_room_an_action_goes_to_is_refused(tmp_path):
+    """A room the player can be sent to is held in place as firmly as an exit holds it."""
+    response = _send(_client(lay_out(tmp_path, SENDS)), "delete", "/api/rooms/attic")
+    assert response.status_code == 409
+    assert response.get_json()["errors"] == [
+        "attic: action open_box sends the player there."]
+
+
+def test_renaming_a_room_follows_into_goes(tmp_path):
+    """An action keeps sending the player to the room under its new name."""
+    world = lay_out(tmp_path, SENDS)
+    assert _send(_client(world), "put", "/api/rooms/attic",
+                 room={"name": "Loft", "desc": "An attic.",
+                       "oneway": True}).status_code == 200
+    with open(world / "world.toml", "rb") as handle:
+        saved = tomllib.load(handle)
+    assert saved["actions"]["open_box"]["goes"] == "loft"
+
+
+def test_deleting_a_room_takes_the_unless_that_led_to_it(client, tmp_path):
+    """A neighbour's way that could shut goes with the room it led to."""
+    _send(client, "put", "/api/rooms/debris_room",
+          room={"name": "Debris room", "desc": "A room full of debris.", "dark": True,
+                "exits": {"out": "cave_mouth", "down": "grotto"},
+                "unless": {"down": "lamp_lit"}, "things": ["rubble"]})
+    assert _send(client, "delete", "/api/rooms/grotto").status_code == 200
+    assert _world(tmp_path)["rooms"]["debris_room"]["unless"] == {}
 
 
 def test_a_room_can_be_made_and_then_deleted_again(client, tmp_path):

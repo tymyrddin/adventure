@@ -263,6 +263,8 @@ def _repoint(doc, table, old, new):
         for _id, action in _records(_table(doc, "actions")):
             if action.get("in_room") == old:
                 action["in_room"] = new
+            if action.get("goes") == old:
+                action["goes"] = new
         if _get(_table(doc, "meta"), "start", "") == old:
             doc["meta"]["start"] = new
     if table == "things":
@@ -288,6 +290,8 @@ def _remove_room(doc, name, words):
     for action, record in _records(_table(doc, "actions")):
         if record.get("in_room") == name:
             return _refuse(words, "room_in_action", 409, room=name, action=action)
+        if record.get("goes") == name:
+            return _refuse(words, "room_in_goes", 409, room=name, action=action)
     for source, room in _records(rooms):
         if source != name:
             _drop_exits(room, name)
@@ -296,11 +300,11 @@ def _remove_room(doc, name, words):
 
 
 def _drop_exits(room, target):
-    """Remove one room's exits to target, and what requires and hidden say of them."""
+    """Remove one room's exits to target, and every gate and hiding said of them."""
     for direction in [way for way, to in _get(room, "exits", {}).items()
                       if to == target]:
         del room["exits"][direction]
-        for key in ("requires", "holding"):
+        for key in ("requires", "holding", "unless"):
             if direction in _get(room, key, {}):
                 del room[key][direction]
         while direction in _get(room, "hidden", []):
@@ -422,7 +426,11 @@ def _graph(world, words):
              for name, room in _records(rooms)
              for direction, target in _get(room, "exits", {}).items()
              if target in rooms]
-    return {"nodes": nodes, "edges": edges}
+    goes = [{"from": action.get("in_room"), "to": action["goes"],
+             "verb": _get(action, "verb", ""), "action": name}
+            for name, action in _records(_get(world, "actions", {}))
+            if isinstance(action.get("goes"), str) and action["goes"] in rooms]
+    return {"nodes": nodes, "edges": edges, "goes": goes}
 
 
 def _pair(rooms, name, direction, target, words):

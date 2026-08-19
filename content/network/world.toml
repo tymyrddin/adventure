@@ -1,0 +1,151 @@
+# The routing world, on the machinery under the internet. The shape comes from the
+# first-level leaf pages of red/source/docs/loops/: map/trust.md and map/dependency.md
+# for the spine, standing/first-look.md for the passive read, change/observer-effect.md
+# for what an announcement leaves behind, and the defensive closings are the real ones
+# from blue/source/docs/counter/network/exposure.md (RPKI origin validation, prefix
+# filters). The words are the game's own. Nothing here is explained; it is shown.
+
+[meta]
+title = "I Promise the Route Is Good"
+start = "before"
+version = 1
+ending = "done"
+
+[rooms.before]
+name = "Welcome!"
+desc = "Before games had graphics they had parsers, and you learned what a world was by typing at it and watching what came back. This is one of those: a world in words, reached through a blinking cursor, on the wager that somewhere in the text there is a way forward.\n\nHere you play the sequence of an attacker's decisions on the machinery under the internet: the routers that take a neighbour's word for where things live, the tables that are only ever as true as the last thing they were told. None of it was built to be lied to, which is why a lie told well keeps working: the packets still arrive, they just arrive by way of you. Each move changes the ground as much as your picture of it. A quiet move can be held for weeks; a loud one is public the instant you make it, because routing is a commons and everyone reads the same table. A defensive answer can drop your route in one place while it still stands in another.\n\n'help' lists what can be done where you are, and the list changes as you move; when stuck, it is the first thing to try. Nothing done here touches anything real.\n\nType 'begin' when ready."
+exits = { begin = "edge" }
+
+[rooms.edge]
+name = "A small network at the edge"
+desc = "One router, one line out, and an upstream that has carried whatever this router announced for as long as the router has been here. It has never once asked whether the announcements were true; that was never the arrangement.\nWhat this router says, the upstream repeats to the world."
+exits = { in = "table", down = "feed", along = "path", out = "board" }
+requires = { along = "announced", out = "enforced" }
+unless = { along = "enforced" }
+hidden = ["along", "out"]
+things = ["session"]
+
+[rooms.table]
+name = "What the router believes"
+desc = "The table the router steers by: for every place in the world, the next step toward it, learned from whoever announced it first and kept until something newer arrives.\nOne line is the upstream's own, a wide block the whole region reaches through them. Nothing here checks who had the right to say any of it."
+exits = { out = "edge" }
+things = ["neighbours_block", "prefix", "collector"]
+
+[rooms.feed]
+name = "The session, in the clear"
+desc = "Announcements arriving one after another from the upstream and its neighbours, each a claim about where some part of the world now lives, none signed, none questioned. The router writes down whatever comes.\nWatched long enough, it settles into a shape: which blocks are always announced, from where, and how often they change."
+dark = true
+exits = { up = "edge", through = "glass" }
+requires = { through = "baseline_taken" }
+unless = { through = "announced" }
+hidden = ["through"]
+things = ["announcements"]
+
+[rooms.glass]
+name = "The looking glass"
+desc = "The whole table as anyone may read it, the routes of the entire internet laid out and learned only by watching. Nothing you do here shows anywhere; it is the vantage of someone who has not yet been seen.\nIt is cheap to keep and slow to spoil. It is also the one thing that announcing spends: the unseen reader and the router that spoke up cannot be the same position twice."
+exits = { back = "feed" }
+things = ["record"]
+
+[rooms.path]
+name = "On the path"
+desc = "The announcement stood up, and the world took the router at its word. Traffic bound for that block arrives here now, all of it, and leaves again toward where it was always going, so nothing looks broken to anyone who sent it.\nEvery route monitor on the internet saw the same announcement land. Being here means being read."
+exits = { back = "edge" }
+things = ["route", "streams"]
+
+[rooms.board]
+name = "What the table shows now"
+desc = "The public view, the one everyone has: your origin against the real one, side by side, and the validators dropping yours: here, and here, and here. Where origin validation runs, the route is already gone. Where it does not, the route still stands, and the traffic still comes.\nThe map disagrees with itself, region by region, and will for as long as that is allowed to be true."
+exits = { back = "edge" }
+
+[things.session]
+name = "peering session"
+desc = "The line to the upstream. It comes up, it stays up, and it repeats what it is told. Nobody on the far end reads what crosses it; they only pass it on. That is the whole of the trust, and it has never been asked to be more."
+portable = false
+
+[things.neighbours_block]
+name = "upstream block"
+desc = "The upstream's own range, a wide piece of the internet that everyone near here reaches by going through them. Reaching it is ordinary. Being it is not."
+portable = false
+
+[things.prefix]
+name = "small prefix"
+desc = "A single narrow range carved out of that wide block. Copying it costs nothing and means nothing, right up until the moment it is announced as though it were yours."
+portable = true
+
+[things.collector]
+name = "route collector"
+desc = "A passive listener for announcements. It reads what arrives and sends nothing of its own. Idle, it tells you nothing; running, it turns the session's noise into a record."
+portable = true
+light_when = "collecting"
+
+[things.announcements]
+name = "the announcements"
+desc = "The claims themselves, arriving in the clear. Most repeat the same shape hour after hour. Once you know what is normally said, you know what would be believed."
+portable = false
+
+[things.record]
+name = "the record"
+desc = "What a day of watching adds up to: which announcements are always made and always believed, and which routers honour another's word without ever once checking it. It weighs nothing and shows nowhere. It leaves the way it arrived, in your head, and the wire never registers that it left."
+portable = false
+
+[things.route]
+name = "the route"
+desc = "The announcement holding this path open: a claim that this router is where that block lives. True nowhere; honoured everywhere that has not yet been told otherwise."
+portable = false
+
+[things.streams]
+name = "the diverted traffic"
+desc = "Everything bound for that block, passing through and moving on. Reading it changes nothing and shows in nothing here; it is the one thing this position gives that costs no more to take than to leave."
+portable = false
+
+[actions.start_collector]
+verb = "start"
+noun = "collector"
+in_room = "feed"
+needs = ["collector"]
+sets = ["collecting"]
+message = "It starts listening, and sends nothing of its own. What was a wall of arriving claims a moment ago is a record you can read."
+
+[actions.map_trust]
+verb = "map"
+noun = "announcements"
+in_room = "feed"
+when = ["collecting"]
+sets = ["baseline_taken"]
+message = "You leave it running and watch a day of announcements go past. The same blocks, from the same places, changing on the same schedule. By morning you know the shape of what is normally said here, and so what could be said and still be believed."
+
+[actions.announce]
+verb = "announce"
+noun = "prefix"
+in_room = "edge"
+needs = ["prefix"]
+when = ["baseline_taken"]
+sets = ["announced"]
+goes = "path"
+message = "You say the block is yours. The upstream repeats it without a pause, and its neighbours repeat it after, and in the time it takes to cross the internet the traffic changes its mind about where that block lives. It lives here now.\nNothing broke. Everything bound for it arrives, and you send it on its way."
+
+[actions.hold]
+verb = "hold"
+noun = "route"
+in_room = "path"
+sets = ["enforced"]
+goes = "edge"
+message = "You move to make the route stick, to keep it past the moment someone looks twice. The reaching is the visible thing. The validators that were only watching now have their reason: the origin is marked false and the route is dropped, first where they run and then wherever the drop is honoured, and the traffic falls back to the way it always went, without you.\nYou are at your own edge again, with what you started with. The upstream is checking its neighbours now."
+
+[actions.keep_record]
+verb = "keep"
+noun = "record"
+in_room = "glass"
+sets = ["done"]
+message = "You have the shape of the place now: what is said here, what is believed, and who never checks. You have announced nothing, and the quiet way back is still yours, unspent.\nThat is enough, and enough is the whole of it. You close the session and go, and nothing on the wire ever knew you read it."
+
+[synonyms]
+get = "take"
+copy = "take"
+listen = "map"
+read = "map"
+originate = "announce"
+l = "look"
+x = "examine"
+i = "inventory"

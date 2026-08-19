@@ -297,6 +297,9 @@ def _do_action(world, game, verb, noun):
         _raises(world, game, action)
         if action.get("once", True):
             game["fired"].add(name)
+        if "goes" in action:
+            game["location"] = action["goes"]
+            return action["message"] + "\n" + describe(world, game)
         return action["message"]
     return _text(world, "no_effect")
 

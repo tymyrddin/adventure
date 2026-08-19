@@ -5,6 +5,9 @@ import json
 
 from engine.world import StateError
 
+_SAVED_KEYS = frozenset(
+    {"location", "inventory", "flags", "fired", "moves", "marks", "placements", "over"})
+
 
 def new_game(world):
     """Return a fresh game dict for a world, remembering the file it was read from."""
@@ -43,12 +46,12 @@ def restore(path, world_hash, said):
         raise StateError(said["save_mismatch"]) from unreadable
     if not isinstance(payload, dict) or payload.get("world_hash") != world_hash:
         raise StateError(said["save_mismatch"])
-    try:
-        game = payload["game"]
-        game["flags"] = set(game["flags"])
-        game["fired"] = set(game["fired"])
-    except (KeyError, TypeError) as malformed:
-        raise StateError(said["save_mismatch"]) from malformed
+    game = payload.get("game")
+    if not isinstance(game, dict) or not game.keys() >= _SAVED_KEYS \
+            or not isinstance(game["flags"], list) or not isinstance(game["fired"], list):
+        raise StateError(said["save_mismatch"])
+    game["flags"] = set(game["flags"])
+    game["fired"] = set(game["fired"])
     return game
 
 

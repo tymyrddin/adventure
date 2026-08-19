@@ -1,0 +1,241 @@
+# The cloud world, fuller version: a whole quiet operation, decomposed into the phases the
+# scenario runs through (access, persistence, lateral, collection, paced exfil), each a
+# short sub-sequence of gated sub-moves rather than a single command. The shape comes from
+# the first-level loop leaves of red/source/docs/loops/ (position/access-to-capability.md,
+# value/reading-what-was-shut.md, value/pacing.md), the arc from
+# blue/source/docs/scenarios/cloud-identity-exfil.md, and the real closings from
+# blue/source/docs/counter/cloud/ (revoke the app consent, the anomaly threshold that
+# notices, the reset that changes nothing). The words are the game's own. There is no dark
+# room here on purpose: the terrain's dread is that it is all lit, readable, and logged, and
+# nothing looks wrong.
+
+[meta]
+title = "I Promise I Belong Here"
+start = "before"
+version = 1
+ending = "done"
+
+[rooms.before]
+name = "Welcome!"
+desc = "Before games had graphics they had parsers, and you learned what a world was by typing at it and watching what came back. This is one of those: a world in words, reached through a blinking cursor, on the wager that somewhere in the text there is a way forward.\n\nHere you play the sequence of an attacker's decisions inside a shared cloud tenant, the kind a whole alliance keeps its post on, defended chiefly by the assumption that a platform everyone leans on could not be the way in. Nothing is broken to get here and nothing is dropped. You log in with a borrowed name and become part of the furniture. Each move changes the ground as much as your picture of it: access is not the same as being able to act, a copied secret outlives you while a borrowed identity does not, and everything you touch is written down under the name you borrowed. A quiet operation, built in small steps, can go unseen for months. A greedy one is noticed in a single afternoon, and the response closes doors you were standing in.\n\n'help' lists what can be done where you are, and the list changes as you move; when stuck, it is the first thing to try. Nothing done here touches anything real.\n\nType 'begin' when ready."
+exits = { begin = "inbox" }
+
+[rooms.inbox]
+name = "A borrowed mailbox"
+desc = "You are logged in as a third assistant under-secretary whose password turned up in an old breach and was never changed. Nothing broke to get here; there was nothing to break. No alarm, no strange process, only ordinary mail and an account exactly as trusted as it was an hour ago.\nOne click away is the identity portal, where an application can be granted the right to read on your behalf. Down the hall is the directory, open to any member for the asking."
+exits = { portal = "portal", hall = "directory", out = "board" }
+requires = { out = "noticed" }
+hidden = ["out"]
+things = ["mail"]
+
+[rooms.portal]
+name = "The identity portal"
+desc = "Where the tenant hands out standing permission. An application registered here is a name the tenant will keep, and on its own it can do nothing; what it may read is decided one screen further in, and that is the screen that matters.\nRegister one under a dull and plausible name, and the consent will survive things the password will not."
+exits = { back = "inbox", in = "scopes" }
+requires = { in = "registered" }
+hidden = ["in"]
+things = ["app"]
+
+[rooms.scopes]
+name = "The consent screen"
+desc = "The list of what an application may do on your behalf (read mail, list users) and a single button that grants it. It is the same button a busy administrator gives a dozen times a week without reading it.\nWhat it issues in return are tokens of the application's own, long-lived, answering to the application and not to the password that let you in."
+exits = { out = "portal" }
+things = ["scopes"]
+
+[rooms.directory]
+name = "Down the hall"
+desc = "The directory, listing every user and every group, answering any member who asks. Named here in plain sight are the shared mailboxes the whole ministry can read by default, and the workloads that run the tenant's own machinery.\nAsking the directory who exists is ordinary. Asking it for all of it at once, quickly, is the part that gets written down."
+exits = { back = "inbox", doors = "groups", deeper = "workload" }
+requires = { doors = "mapped", deeper = "mapped" }
+unless = { deeper = "noticed" }
+hidden = ["doors", "deeper"]
+things = ["directory"]
+
+[rooms.groups]
+name = "Who may read what"
+desc = "The permissions themselves: which group may open which mailbox, most of it dull, and among the dull a short list that is not. The shared mailboxes are here, and what they are named for (the delegation's briefings, the counsel on the arrangement), and beside each the members who may read it, a list your borrowed name is already on.\nNo break-in stands between you and them. The access was here for the asking; it only had to be found."
+exits = { back = "directory", along = "mailboxes" }
+requires = { along = "doors_found" }
+unless = { along = "noticed" }
+hidden = ["along"]
+things = ["permissions"]
+
+[rooms.mailboxes]
+name = "The shared mailboxes"
+desc = "The mailboxes any member may read, which is to say the alliance's briefings, the legal advice on the arrangement, the minister's calendar of who is meeting whom and when.\nA little at a time, none of it crosses the thresholds the loss-prevention rules watch for. All at once, it does. There is no need to hurry."
+exits = { back = "groups", out = "stage" }
+holding = { out = ["post"] }
+unless = { out = "noticed" }
+hidden = ["out"]
+things = ["post"]
+
+[rooms.stage]
+name = "The edge of the tenant"
+desc = "Where the tenant's own traffic goes out to the wider world all day long, steady and unremarkable. Copies set down here, near that ordinary flow, wait to leave inside it rather than against it.\nGathering them and sending them are two acts, watched by two different things. This is only the first."
+exits = { back = "mailboxes", out = "transfer" }
+requires = { out = "staged" }
+hidden = ["out"]
+things = ["boundary"]
+
+[rooms.transfer]
+name = "Out with the traffic"
+desc = "The outbound path itself, one of a hundred the tenant uses, going to the places it talks to every day. Anything that leaves at its pace and in its shape leaves without a mark.\nWhat is staged behind you is ready. What remains is to let it go slowly enough that it never becomes a shape."
+exits = { back = "stage" }
+things = ["channel"]
+
+[rooms.workload]
+name = "A running workload"
+desc = "One of the tenant's own machines, quietly doing its job, and carrying, as they all do, an identity of its own to do it with. The identity is attached here and answers here; it will sign a call as the workload to anything the workload may reach.\nSomeone also pasted a plain secret into the configuration once and forgot it. The two are not the same kind of thing."
+exits = { back = "directory", up = "wider" }
+requires = { up = "assumed" }
+hidden = ["up"]
+things = ["role", "secret"]
+
+[rooms.wider]
+name = "The whole subscription"
+desc = "What the workload's identity can reach if it reaches past its own work: every resource under the subscription, every other identity, the standing keys to all of it at once.\nIt is one call from where you are, and a different order of thing entirely. Reading has left a trail; this would not be reading."
+exits = { back = "workload" }
+things = ["privilege"]
+
+[rooms.board]
+name = "What they see now"
+desc = "The other side of the glass: the audit trail, every call you made listed under the name you borrowed, and at the top of it the anomaly that was finally too much to miss. The consent is being pulled and the sessions killed as you watch.\nSomeone has reset the borrowed password, twice, and noted with irritation that it changed nothing. It never would have. The password was never what the read depended on. That part they will work out later, or not."
+exits = { back = "inbox" }
+
+[things.mail]
+name = "the mail"
+desc = "The under-secretary's ordinary correspondence: meeting requests, a newsletter, a note about a leaving party. It is the doorway the borrowed name came through."
+portable = false
+
+[things.app]
+name = "the application"
+desc = "A registration you can stand up under any name you like. On its own it does nothing; it is only a name the tenant has agreed to keep. What it may read is granted one screen further in, and that grant is the part that outlives the password."
+portable = false
+
+[things.scopes]
+name = "the scopes"
+desc = "What the application is asking for: read mail, list users. Granting them issues its tokens, long-lived and answering to the application. It is the difference between a key you are lent and a key you have cut."
+portable = false
+
+[things.directory]
+name = "the directory"
+desc = "Every user, every group, and which mailboxes each may read, laid out for any member who asks. Asking once is invisible. Asking for all of it at once, quickly, is the shape the anomaly rules are drawn around."
+portable = false
+
+[things.permissions]
+name = "the permissions"
+desc = "The list of who may read what, and it does not ask why you are reading it. Followed to its end, it turns the shared mailboxes from a rumour into a door your borrowed name may already open."
+portable = false
+
+[things.post]
+name = "the post"
+desc = "The diplomatic correspondence itself: draft negotiating positions, cables, the legal analysis of the sanctions, the minister's whole contact network. Copying it makes no sound. The only tell would be reading too much of it too fast."
+portable = true
+
+[things.boundary]
+name = "the boundary"
+desc = "The line where the tenant's inside becomes its outside. Ordinary traffic crosses it all day. The trick is to leave inside that traffic, and not beside it."
+portable = false
+
+[things.channel]
+name = "the outbound path"
+desc = "One ordinary route among a hundred the tenant uses, indistinguishable from the day's routine for exactly as long as nothing about it is hurried."
+portable = false
+
+[things.role]
+name = "the workload's identity"
+desc = "The identity attached to this machine, handed out by the endpoint that only answers from inside. It will sign calls as the workload. But it does not leave the workload: you cannot copy it out, and every use of it writes a line in the log under the workload's name and, soon enough, near yours."
+portable = false
+
+[things.secret]
+name = "the pasted secret"
+desc = "A plain string left in the configuration, and unlike the identity beside it, this one copies. It keeps working from anywhere, and it outlives the session that found it. What it costs is that a string in a config is a string someone can rotate the moment they think to look."
+portable = true
+
+[things.privilege]
+name = "the master role"
+desc = "The subscription-wide role, the one that owns everything under it. Taking it is not reading anything; it is the loudest single act this place has to offer."
+portable = false
+
+[actions.register]
+verb = "register"
+noun = "app"
+in_room = "portal"
+sets = ["registered"]
+message = "You stand up an application under a name that belongs, and the tenant files it without a second look. It exists now, and it can do nothing yet. What it may read is decided one screen on."
+
+[actions.consent]
+verb = "consent"
+noun = "scopes"
+in_room = "scopes"
+sets = ["anchored"]
+message = "You grant the application what it asked for. It answers with tokens of its own now, long-lived, and nothing to do with the password.\nWhatever anyone does to that password after today, this keeps reading."
+
+[actions.sweep]
+verb = "sweep"
+noun = "directory"
+in_room = "directory"
+sets = ["mapped"]
+raises = { noise = 1 }
+message = "You ask the directory for all of it at once: every user, every group, every mailbox and who may open it. It answers without hesitating, the way it answers anyone. The workloads behind it are named now too.\nIt answered fast because you asked fast, and asking fast is a shape. A line goes into a log that a quiet day would not have had."
+
+[actions.check]
+verb = "check"
+noun = "permissions"
+in_room = "groups"
+when = ["mapped"]
+sets = ["doors_found"]
+message = "You read down the permissions until the shared mailboxes resolve out of the list: named, and beside each one the members who may open it, your borrowed name among them. Nothing had to be forced. The door was standing open; it only had to be found in the wall."
+
+[actions.stage]
+verb = "stage"
+noun = "post"
+in_room = "stage"
+needs = ["post"]
+sets = ["staged"]
+message = "You gather the copies into one place at the boundary, ready to go out inside the ordinary traffic rather than against it. It is a neater pile than it should be, the one shape an investigation reads at a glance, and it will not sit here long."
+
+[actions.send]
+verb = "send"
+noun = "post"
+in_room = "transfer"
+needs = ["post"]
+when = ["anchored", "staged"]
+sets = ["done"]
+message = "You let the copies go out with the day's traffic, slowly, in small amounts, well under the line that would show. You have announced nothing, forced nothing, and the application you left behind will go on reading long after the password is changed in a panic that changes nothing.\nYou close the session and go. Every dashboard in the tenant will record a quiet year, and mean it."
+
+[actions.assume]
+verb = "assume"
+noun = "role"
+in_room = "workload"
+once = false
+sets = ["assumed"]
+raises = { noise = 1 }
+message = "You take the identity the workload was carrying and call as it. The tenant honours the call, because the workload is allowed and you are the workload now, as far as anything here can tell.\nAs far as the log can tell, too. Each call is written down under the workload's name, and the workload does not usually make it."
+
+[actions.escalate]
+verb = "escalate"
+noun = "privilege"
+in_room = "wider"
+when = ["assumed"]
+sets = ["noticed"]
+goes = "inbox"
+message = "You reach past what the workload needs for what the whole subscription would give: every resource, every other identity, the lot. It is one call too many and the wrong shape entirely. Somewhere a rule that had been only counting decides it has counted enough.\nThe session dies mid-reach. You are logged out, back at the borrowed mailbox, and this time the name is already being taken apart around you."
+
+[marks.noise]
+threshold = 3
+sets = "noticed"
+
+[synonyms]
+get = "take"
+copy = "take"
+list = "sweep"
+enumerate = "sweep"
+grant = "consent"
+read = "check"
+use = "assume"
+widen = "escalate"
+exfiltrate = "send"
+l = "look"
+x = "examine"
+i = "inventory"

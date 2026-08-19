@@ -3,13 +3,19 @@
 A text adventure engine in the tradition of Colossal Cave and Zork. You type what you want to do, the game describes
 what happens, and the world keeps track of the consequences.
 
-Two worlds are included, more will follow.
+Four worlds are currently included. Each has its own short introduction:
 
-`original` is a cave adventure. You go under a hill, and work out how things fit together.
+* `original`: [The Old Working](content/original/README.md), a cave adventure. You go under a hill and work out how
+  things fit together.
+* `ot`: [I Promise I'm a Qualified Engineer](content/ot/README.md), an evening at a water treatment plant, played from
+  the wrong side of the desk.
+* `network`: [I Promise the Route Is Good](content/network/README.md), the machinery under the internet, and a lie that
+  keeps working.
+* `cloud`: [I Promise I Belong Here](content/cloud/README.md), a shared cloud tenant read for months while every
+  dashboard reports a calm and blameless year.
 
-`ot` is an operational technology network. You play through an attacker's evening at a water plant, adventure style: 
-observing the network, taking a copy of something, discovering what normal looks like, and that being noticed changes 
-what is possible.
+The non-original worlds let you inhabit an attacker's decisions on a particular terrain. They show reasoning and
+consequence; they do not teach techniques.
 
 ## Playing
 
@@ -18,6 +24,8 @@ From the repository root:
 ```text
 ./play original
 ./play ot
+./play network
+./play cloud
 ```
 
 You can also pass a world directory directly:
@@ -28,26 +36,9 @@ python -m cli.play content/original
 
 An unrecognised world name lists the available worlds.
 
-Type `begin` to start. From there, use the basic vocabulary, which looks like this:
-
-```text
-help
-look
-take lamp
-go in
-examine key
-i
-l
-save
-load
-quit
-```
-
-`help` is contextual. It tells you what you can do where you are. The available actions can change as the game 
-progresses, so `help` is a useful move when you are stuck.
-
-Object names do not need to be exact. If the room contains one thing matching `brass lamp`, `take brass lamp` is 
-enough.
+Type `begin` to start. From there, use the basic vocabulary (check in `help`). `help` is contextual. It tells you what 
+you can do where you are. The available actions can change as the game progresses, so `help` is a useful move when you 
+are stuck.
 
 ## Worlds
 
@@ -60,7 +51,7 @@ messages.toml
 
 `world.toml` contains the structure and rules of the world: rooms, objects, exits and actions.
 
-`messages.toml` contains the texts presented to a player. 
+`messages.toml` contains the texts presented to a player.
 
 A world can define:
 
@@ -69,12 +60,13 @@ A world can define:
 * flags recording things that have happened
 * exits gated by remembered flags or objects currently held
 * exits that close when a particular flag is set
+* actions that move the player somewhere else when they fire
 * dark rooms that require a light source to be described
 * `marks`, which accumulate as the player acts and can set flags at thresholds
 * `spends`, which consume objects when they are used
 * an ending, reached when the world records the required state
 
-`marks` provide a simple way to model accumulating consequences. An action can increase several marks at once. 
+`marks` provide a simple way to model accumulating consequences. An action can increase several marks at once.
 Crossing a threshold can change the available world.
 
 The `rules/` directory contains the parts shared by every world: built-in verbs, the content schema, and the vocabulary
@@ -147,13 +139,13 @@ The world used by the transcript lives with the tests, so changes to authored wo
 alter the behavioural fixture.
 
 There is also a browser harness under `tools/harness/`. It drives the actual map editor in a real browser, covering the
-JavaScript that is not exercised by the Python tests. It requires Node and a browser. If either is unavailable, the 
+JavaScript that is not exercised by the Python tests. It requires Node and a browser. If either is unavailable, the
 browser harness is skipped.
 
 ## Layout
 
 ```text
-content/   worlds: original (cave), ot (plant)
+content/   worlds: original, ot, network, cloud (each with its own README)
 rules/     shared built-ins, schema and authoring vocabulary
 engine/    world loading, validation, state, data and verbs
 cli/       command line player and ./play launcher
@@ -184,6 +176,6 @@ implementation detail.
 
 ## Intent
 
-The central idea behind non-original worlds is simple: a useful move can open several possibilities; a costly move 
-can leave the player somewhere less useful; and a defensive response can close one route while making another more 
+The central idea behind non-original worlds is simple: a useful move can open several possibilities; a costly move
+can leave the player somewhere less useful; and a defensive response can close one route while making another more
 interesting.

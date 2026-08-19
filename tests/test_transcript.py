@@ -261,6 +261,37 @@ def test_one_memory_can_shut_one_way_and_open_another(tmp_path):
     assert perform(world, game, "loud").startswith(world["rooms"]["seen"]["name"])
 
 
+THROWN = ('[meta]\ntitle = "T"\nstart = "office"\nversion = 1\n\n'
+          '[rooms.office]\nname = "Office"\ndesc = "An office."\n'
+          'exits = { in = "server_room" }\n\n'
+          '[rooms.server_room]\nname = "Server room"\ndesc = "Racks."\n'
+          'exits = { out = "office" }\nthings = ["console"]\n\n'
+          '[things.console]\nname = "console"\n\n'
+          '[actions.probe]\nverb = "probe"\nnoun = "console"\n'
+          'goes = "office"\nsets = ["noticed"]\nmessage = "Escorted out."\n')
+
+
+def test_an_action_can_put_the_player_somewhere_else(tmp_path):
+    """The costly move: firing the action leaves the player back where they started."""
+    world = load(lay_out(tmp_path, THROWN))
+    game = new_game(world)
+    perform(world, game, "in")
+    answer = perform(world, game, "probe console")
+    assert game["location"] == "office"
+    assert "noticed" in game["flags"]
+    assert answer == "Escorted out.\n" + describe(world, game)
+
+
+def test_an_action_that_stays_put_says_only_its_message(tmp_path):
+    """Without goes, the reply is the message alone, as it always was."""
+    world = load(lay_out(tmp_path, THROWN))
+    game = new_game(world)
+    del world["actions"]["probe"]["goes"]
+    perform(world, game, "in")
+    assert perform(world, game, "probe console") == "Escorted out."
+    assert game["location"] == "server_room"
+
+
 def test_describe_opens_the_game(tmp_path):
     """A client can describe the starting room without faking a turn."""
     world, game = started(tmp_path)
@@ -305,7 +336,11 @@ def test_restore_without_a_save_file(tmp_path):
     assert str(refused.value) == words["save_missing"]
 
 
-@pytest.mark.parametrize("payload", [{}, {"game": []}, {"game": {"flags": 1}}])
+@pytest.mark.parametrize("payload", [
+    {}, {"game": []}, {"game": {"flags": 1}},
+    {"game": {"location": "cave_mouth", "inventory": [], "flags": "abc", "fired": [],
+              "moves": 0, "marks": {}, "placements": {}, "over": False}},
+])
 def test_restore_refuses_a_save_of_the_wrong_shape(payload, tmp_path):
     """A file that parses as JSON but is not a save is refused, not half applied."""
     world, game = started(tmp_path)

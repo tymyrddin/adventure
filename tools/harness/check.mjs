@@ -361,6 +361,34 @@ check("a way can be set to shut once a memory is remembered",
   await evaluate("state.world.rooms.cave_mouth.unless.in"),
   ["lamp_lit"]);
 
+// The goes key: an action can send the player to another room, and the map draws that
+// move as its own edge. Self-contained, run last, on cave_mouth.
+await evaluate("cy.$id('cave_mouth').emit('tap')");
+await settle("state.room === 'cave_mouth'");
+await evaluate("JOBS['new-action']()");
+await settle("state.action === ''");
+await evaluate(`(() => {
+  const box = document.querySelector('[data-form=action]');
+  box.querySelector('[data-field=verb]').value = 'bolt';
+  box.querySelector('[data-field=noun]').value = 'shovel';
+  box.querySelector('[data-field=message]').value = 'You bolt.';
+  box.querySelector('[data-field=goes]').value = 'debris_room';
+  return JOBS['save-action']();
+})()`);
+await settle("Boolean((state.world.actions.bolt_shovel || {}).goes)");
+check("an action can be told where it sends the player",
+  await evaluate("state.world.actions.bolt_shovel.goes"), "debris_room");
+check("the map draws a goes edge for it",
+  await evaluate("cy.edges('[?goes]').length"), 1);
+check("the goes edge runs from the room it fires in to the room it reaches",
+  await evaluate(`(() => {
+    const edge = cy.edges('[?goes]')[0];
+    return [edge.data('source'), edge.data('target')];
+  })()`), ["cave_mouth", "debris_room"]);
+await evaluate("cy.edges('[?goes]').emit('tap')");
+check("tapping a goes edge opens its action, not a phantom exit",
+  await evaluate("state.action"), "bolt_shovel");
+
 console.log(failures === 0
   ? "\nall interaction checks passed"
   : `\n${failures} failed`);

@@ -48,6 +48,23 @@ def test_a_wave_lists_its_flags_in_file_order(tmp_path):
     assert waves[0]["flags"] == ["zeta", "alpha"]
 
 
+DROPPED = ('[meta]\ntitle = "C"\nstart = "hall"\nversion = 1\n\n'
+           '[rooms.hall]\nname = "Hall"\ndesc = "A hall."\n'
+           'oneway = true\nthings = ["rope"]\n\n'
+           '[rooms.cell]\nname = "Cell"\ndesc = "A cell."\noneway = true\n\n'
+           '[things.rope]\nname = "rope"\n\n'
+           '[actions.pull_rope]\nverb = "pull"\nnoun = "rope"\n'
+           'goes = "cell"\nsets = ["fell"]\nmessage = "Down you go."\n')
+
+
+def test_a_goes_room_needs_no_exit_leading_to_it(tmp_path):
+    """No exit reaches the cell; the action that sends the player there is enough."""
+    world = load(lay_out(tmp_path, DROPPED))
+    rooms, _flags, _waves = solvable(world)
+    assert "cell" in rooms
+    assert reachable_from(world, "hall") == {"hall", "cell"}
+
+
 def test_reachable_ignores_gates(world):
     """Breadth-first reachability crosses the gated exit the solver has to earn."""
     world = load(world)

@@ -1,0 +1,43 @@
+# Everything this world says. Quiet and administrative: the tenant answers every request
+# as designed, and nothing volunteers that anything is wrong.
+#
+# There is no dark room in this world, so pitch_dark and too_dark are written but never
+# reached. The schema still asks for them, and a world says all of its own lines.
+
+[player]
+prompt = "> "
+
+no_such_thing = "Nothing here answers to {noun}."
+which_one = "Say which: {things}."
+unknown_verb = "Nothing you know how to do is called {word}."
+no_effect = "Nothing you can see changes."
+needs_noun = "{verb} what?"
+needs_direction = "{verb} where?"
+already_done = "Already done. Nothing new comes back."
+
+taken = "Copied."
+dropped = "Deleted your copy."
+not_portable = "That one does not copy. It works only where it lives, and only while the identity behind it holds."
+carrying = "Copied so far: {things}."
+carrying_nothing = "You have copied nothing yet."
+you_can_see = "Here: {things}."
+exits = "From here: {exits}."
+nothing_special = "Nothing in it you have not already read."
+
+no_way = "Nothing goes {dir} from here."
+blocked = "The way {dir} does not open."
+shut = "The way {dir} is closed to you now."
+pitch_dark = "You cannot see what is here.\nIf you brought something that reads for you, this is the moment to START it."
+too_dark = "You cannot make that out from here."
+
+saved = "State written."
+loaded = "State restored."
+save_mismatch = "That state belongs to a different tenant."
+save_missing = "Nothing saved."
+goodbye = "You sign out."
+
+help_exits = "From here: {dirs}."
+help_verb = "{verb}: {nouns}."
+help_always = "Anywhere: {verbs}."
+help_short = "Short: {short}."
+help_pair = "{short} for {long}"

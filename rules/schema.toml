@@ -54,7 +54,7 @@ optional = { desc = "string", portable = "boolean", light_when = "string" }
 
 [actions]
 required = { verb = "string", noun = "string", sets = "array", message = "string" }
-optional = { in_room = "string", needs = "array", when = "array", once = "boolean", raises = "table", spends = "array" }
+optional = { in_room = "string", needs = "array", when = "array", once = "boolean", raises = "table", spends = "array", goes = "string" }
 
 # What a move leaves behind. A world names its own: attention, disruption, residue.
 [marks]

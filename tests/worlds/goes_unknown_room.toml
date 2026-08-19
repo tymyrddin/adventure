@@ -1,0 +1,20 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+oneway = true
+things = ["door"]
+
+[things.door]
+name = "oak door"
+
+[actions.open_door]
+verb = "open"
+noun = "door"
+goes = "cellar"
+sets = ["opened"]
+message = "The door opens."
