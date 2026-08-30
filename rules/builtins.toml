@@ -8,7 +8,6 @@ articles = ["a", "an", "the"]
 # needs_noun: does nothing on its own. dark_blocks: refused by an unlit room.
 # takes_direction: its second word is a direction, not a thing id.
 [verbs.look]
-dark_blocks = true
 
 [verbs.go]
 needs_noun = true

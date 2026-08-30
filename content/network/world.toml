@@ -12,49 +12,120 @@ version = 1
 ending = "done"
 
 [rooms.before]
-name = "Welcome!"
-desc = "Before games had graphics they had parsers, and you learned what a world was by typing at it and watching what came back. This is one of those: a world in words, reached through a blinking cursor, on the wager that somewhere in the text there is a way forward.\n\nHere you play the sequence of an attacker's decisions on the machinery under the internet: the routers that take a neighbour's word for where things live, the tables that are only ever as true as the last thing they were told. None of it was built to be lied to, which is why a lie told well keeps working: the packets still arrive, they just arrive by way of you. Each move changes the ground as much as your picture of it. A quiet move can be held for weeks; a loud one is public the instant you make it, because routing is a commons and everyone reads the same table. A defensive answer can drop your route in one place while it still stands in another.\n\n'help' lists what can be done where you are, and the list changes as you move; when stuck, it is the first thing to try. Nothing done here touches anything real.\n\nType 'begin' when ready."
+name = "Network Adventure"
+art = '''
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+             T H E   M A C H I N E R Y   B E L O W
+          routers taking a neighbour's word for it
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      (AS64500)     (AS64501)     (AS64502)     (AS64503)
+        [R]----------[R]----------[R]----------[R]
+          \           |            |           /
+           '----------+------------+----------'
+                  announcements, none of them signed
+    ~~~~~~~~~~~~~~~~~~~~~~~ the internet ~~~~~~~~~~~~~~~~~~~
+'''
+desc = "You play the sequence of an attacker's decisions on the machinery under the internet: the routers that take a neighbour's word for where things live, and the tables that are only ever as true as the last thing they were told. None of it was built to be lied to, which is why a lie told well keeps working: the packets still arrive, they just arrive by way of you. A move here does not carry you anywhere. It changes what other networks believe about where traffic should go. You inspect what is currently believed, work out what you could make believed instead, announce or withhold, watch what actually propagates, and decide from there.\n\nThe trade runs through the whole business. A quiet vantage can be held for weeks; a loud announcement is public the instant you make it, because routing is a commons and everyone reads the same table. A defensive answer can drop your route in one place while it still stands in another. The game keeps track of what each move spends and what it opens. Your part is to notice, decide whether you care, and move accordingly.\n\n'help' lists what can be done where you are, and the list changes as you move; when stuck, it is the first thing to try. Nothing done here touches anything real.\n\nType 'begin' when ready."
 exits = { begin = "edge" }
 
 [rooms.edge]
 name = "A small network at the edge"
+art = '''
+        your edge                        the upstream
+      -------------                     --------------
+       .---------.      one line out     .----------.
+       | ROUTER  | ==================>   | repeats  |
+       |_________|   what you announce   | it to all|
+        AS64500                          |__________|
+            |                                 |
+       your networks                    ---> the world
+        it has never once asked whether it was true
+'''
 desc = "One router, one line out, and an upstream that has carried whatever this router announced for as long as the router has been here. It has never once asked whether the announcements were true; that was never the arrangement.\nWhat this router says, the upstream repeats to the world."
-exits = { in = "table", down = "feed", along = "path", out = "board" }
-requires = { along = "announced", out = "enforced" }
-unless = { along = "enforced" }
-hidden = ["along", "out"]
+exits = { "inspect table" = "table", "inspect session" = "feed", "inspect traffic" = "path", "inspect public view" = "board" }
+requires = { "inspect traffic" = "announced", "inspect public view" = "enforced" }
+unless = { "inspect traffic" = "enforced" }
+hidden = ["inspect traffic", "inspect public view"]
 things = ["session"]
 
 [rooms.table]
 name = "What the router believes"
+art = '''
+      DESTINATION           NEXT HOP       LEARNED
+      -------------------   -----------    -------------
+      10.0.0.0/8            upstream       first to say
+      192.0.2.0/24          upstream       first to say
+      198.51.100.0/24       neighbour      first to say
+   >  203.0.113.0/18        UPSTREAM       a wide block
+      -------------------   -----------    -------------
+       nothing here checks who had the right to say it
+'''
 desc = "The table the router steers by: for every place in the world, the next step toward it, learned from whoever announced it first and kept until something newer arrives.\nOne line is the upstream's own, a wide block the whole region reaches through them. Nothing here checks who had the right to say any of it."
-exits = { out = "edge" }
+exits = { back = "edge" }
 things = ["neighbours_block", "prefix", "collector"]
 
 [rooms.feed]
 name = "The session, in the clear"
+art = '''
+      upstream  >>  198.51.100.0/24   via them   . . .
+      neighbour >>  192.0.2.0/24      via them   . . .
+      upstream  >>  203.0.113.0/18    via them   . . .  <- wide
+      neighbour >>  10.0.0.0/8        via them   . . .
+      ...................................................
+        none signed . none questioned . all written down
+'''
 desc = "Announcements arriving one after another from the upstream and its neighbours, each a claim about where some part of the world now lives, none signed, none questioned. The router writes down whatever comes.\nWatched long enough, it settles into a shape: which blocks are always announced, from where, and how often they change."
 dark = true
-exits = { up = "edge", through = "glass" }
-requires = { through = "baseline_taken" }
-unless = { through = "announced" }
-hidden = ["through"]
+exits = { back = "edge", "inspect looking glass" = "glass" }
+requires = { "inspect looking glass" = "baseline_taken" }
+unless = { "inspect looking glass" = "announced" }
+hidden = ["inspect looking glass"]
 things = ["announcements"]
 
 [rooms.glass]
 name = "The looking glass"
+art = '''
+        .--------------------------------------------.
+        |   L O O K I N G   G L A S S                |
+        |   the whole table, as anyone may read it   |
+        |--------------------------------------------|
+        |   0.0.0.0/0  ..  the routes of the world   |
+        |   learned only by watching, showing nowhere|
+        '--------------------------------------------'
+             unseen -- spend it once, and you are seen
+'''
 desc = "The whole table as anyone may read it, the routes of the entire internet laid out and learned only by watching. Nothing you do here shows anywhere; it is the vantage of someone who has not yet been seen.\nIt is cheap to keep and slow to spoil. It is also the one thing that announcing spends: the unseen reader and the router that spoke up cannot be the same position twice."
 exits = { back = "feed" }
 things = ["record"]
 
 [rooms.path]
 name = "On the path"
+art = '''
+        the world                    you, now on the path
+      ------------                   --------------------
+       senders --> 203.0.113.0/18 -->  .----------.
+                   (your announcement)  |  ROUTER  |
+                                        |__________|
+                       traffic in --------'   |
+                          ... and out to where it was going
+       every route monitor saw the same announcement land
+'''
 desc = "The announcement stood up, and the world took the router at its word. Traffic bound for that block arrives here now, all of it, and leaves again toward where it was always going, so nothing looks broken to anyone who sent it.\nEvery route monitor on the internet saw the same announcement land. Being here means being read."
 exits = { back = "edge" }
 things = ["route", "streams"]
 
 [rooms.board]
 name = "What the table shows now"
+art = '''
+      REGION         ORIGIN SEEN      REAL          RPKI
+      -----------    -------------    ---------     -----
+      Europe         AS64500 (you)    AS64502       DROP
+      N. America     AS64500 (you)    AS64502       DROP
+      Asia           AS64500 (you)    AS64502       ok *
+      -----------    -------------    ---------     -----
+       * where validation runs the route is gone; where
+         it does not, the traffic still comes to you
+'''
 desc = "The public view, the one everyone has: your origin against the real one, side by side, and the validators dropping yours: here, and here, and here. Where origin validation runs, the route is already gone. Where it does not, the route still stands, and the traffic still comes.\nThe map disagrees with itself, region by region, and will for as long as that is allowed to be true."
 exits = { back = "edge" }
 

@@ -25,8 +25,8 @@ exits = "From here: {exits}."
 nothing_special = "Nothing in it you have not already read."
 
 no_way = "Nothing goes {dir} from here."
-blocked = "The way {dir} does not open."
-shut = "The way {dir} is not open any more."
+blocked = "That way does not open yet."
+shut = "That way is closed now."
 pitch_dark = "The session is a wall of arriving claims, too fast to read.\nIf you brought something that listens, this is the moment to START it."
 too_dark = "You cannot make that out through the noise from here."
 

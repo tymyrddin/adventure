@@ -6,75 +6,316 @@
 title = "I Promise I'm a Qualified Engineer"
 start = "before"
 version = 1
+ending = "done"
 
 [rooms.before]
-name = "Welcome!"
-desc = "Before games had graphics, voice acting, or helpful arrows, there were adventures made of words. In the 1970s and early 1980s, Colossal Cave Adventure and Zork turned the command line into a place to explore: rooms, puzzles, treasures, traps, and the occasional deeply unhelpful parser. You typed what you wanted to do and waited to find out whether the game understood you. What follows belongs to that tradition: a world in words, entered through a blinking cursor, on the proposition that somewhere in the text there is probably a way forward.\n\nHere, you play to experience the sequence of an attacker's decisions: observe, form a finding, choose a path, turn access into position, see what changed, decide what next. Each command changes the terrain as well as your understanding of it. A useful move opens possibilities; a costly one puts you back where you started; a defensive response can close one route while making another more interesting. The point is not to memorise techniques but to inhabit the loop of observation, movement, consequence, and revision that gives an adversarial operation its shape.\n\n'help' lists what can be done in that place, and the list changes as you move; when stuck, it is the first thing to try. Nothing done here touches anything real.\n\nType 'begin' when ready."
+name = "OT Adventure"
+art = '''
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              O T   A D V E N T U R E
+         a water treatment works, on the edge of town
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      .___.    .___.     .=======.    .___.      ___________
+      |   |    |   |     | ctrl  |    |   |      |_|_|_|_|_|
+      |___|    |___|     |_room__|    |___|      |_|_|_|_|_|
+      tank     tank      operators    tank         plant
+    ~~~~~~~~~~~~~~~~~~~~~~~~ pipes ~~~~~~~~~~~~~~~~~~~~~~~~~~
+'''
+desc = "You play through the sequence of an attacker's decisions in a constrained situation. Each move changes the terrain: a useful move opens possibilities; a costly move closes them or reveals new pressure; a defensive response can eliminate one route while making another more interesting. The point is not to memorise techniques but to discover the structure of the decision loop: what you observe, what you believe is happening, what you choose to do, what actually changes as a result, and what that forces you to decide next.\n\nThe game keeps track of the consequences. Your job is to notice them, decide whether you care about them, and move accordingly.\n\n'help' lists what you can do in any place, and the list changes as the situation changes. When stuck, that is the first thing to try. Nothing here is real.\n\nType 'begin' when ready."
 exits = { begin = "office" }
 
 [rooms.office]
 name = "A shared office, after hours"
+art = '''
+   ___________________________________________________________
+   |  []   []            night window             []   []    |
+   |_________________________________________________________|
+                   ._________________________.
+                   |  .___________________.  |
+                   |  |                   |  |
+                   |  |  > qualified_     |  |    open, warm,
+                   |  |    engineer _     |  |    not yet locked
+                   |  |___________________|  |
+                   |  [___________________]  |
+                   '_________________________'
+              ________||__________________||_________
+             /        the desk, chair pushed back    \
+            /_________________________________________\
+'''
 desc = "Nobody else is in. On the far desk a laptop is open and still warm, the chair pushed back rather than tucked under. It has not locked itself yet.\nThe sticker on the lid names a contractor who looks after the water treatment works on the edge of town."
-exits = { in = "disk" }
+exits = { "access laptop" = "disk" }
+
+[rooms.debrief]
+name = "After"
+oneway = true
+art = '''
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                 A F T E R   -   walking it back
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      trusted in --> read inward --> act --> and out again
+          o              o           o            o
+          |              |           |            |
+       creds in      protocols    no limit     logs kept
+        a file      in the clear  on change    on the box
+    ~~ not one exploit; each a door built to be left open ~~
+'''
+desc = "However it ended, step back from it, because the shape is worth seeing whole: you arrived as someone the plant already trusted and followed that trust inward, one permitted step after another, until it reached what it was meant to protect. Getting there took no exploit. Each move was a thing the system was built to allow, done by someone it was not built to doubt. What you did once you were in was the only part that was ever a choice. That is the loop, and it closes only where a defender chose to look, so here is where yours ran, and where each step of it could have ended."
+
+[[rooms.debrief.notes]]
+when = "account_known"
+line = "You knew whose name to wear because a support ticket, kept in the clear, told you. On a workstation that did not store them, that first step is a guess instead of a gift."
+
+[[rooms.debrief.notes]]
+when = "creds_known"
+line = "The keys to the plant itself were in a project file on that same laptop. Held in a vault and rotated when the contractor's work ended, they would have opened nothing by the time you found them."
+
+[[rooms.debrief.notes]]
+when = "baseline_taken"
+line = "You learned how the plant behaves by reading its own traffic, because it spoke in the clear. Had those messages been signed and encrypted, you could have watched all night and learned nothing worth having."
+
+[[rooms.debrief.notes]]
+when = "historian_read"
+line = "The historian handed you years of plant history because your borrowed account was allowed to read it, though its job never needed to. Read access scoped to what the role actually uses would have left most of that closed."
+
+[[rooms.debrief.notes]]
+when = "alarm_raised"
+line = "The moment you reached past the boundary, a line turned red in the alarm list. The alarm was never the weak point. The empty chair in front of it was, and it stayed empty while you worked."
+
+[[rooms.debrief.notes]]
+when = "loud_operation"
+line = "You took everything, and quickly. A boundary that watched how much data left and how fast would have seen a quiet account move in a way no one's job requires."
+
+[[rooms.debrief.notes]]
+when = "logs_covered"
+line = "You cut the logs behind you. Shipped off the machine as they were written, cutting the local copy changes nothing except to mark the exact minute you decided to hide."
+
+[[rooms.debrief.notes]]
+when = "persistence_installed"
+line = "You wrote yourself a way back into the controllers. A plant that compared its controller logic against a known-good copy would find that change on the next check, whether or not anyone still remembered you."
+
+[[rooms.debrief.notes]]
+when = "safety_off"
+line = "You reached the safety interlock and switched it off. Kept on its own network and judged by its own instruments, it would not have taken that instruction from where you were standing."
+
+[[rooms.debrief.notes]]
+when = "sabotage"
+line = "And you did not stop at reading; you moved the dosing itself. The last defence for that sits on no network at all: a physical limit set below anything the software will accept, so that a wrong number cannot become a wrong day for the people downstream."
+
+[[rooms.debrief.notes]]
+when = "clean_exit"
+line = "You left without touching a thing, and the record reads as an ordinary night. That was the whole aim, and it is the version of this they never learn about."
+
+[[rooms.debrief.notes]]
+when = "evidence_removed"
+line = "You erased your traces on the way out. Where the same records were already kept off the box, the erasure is not a way to vanish; it is the thing that finally gets noticed."
+
+[[rooms.debrief.notes]]
+when = "false_flags_planted"
+line = "You left a trail pointing at someone else. It holds only until an investigator trusts the copy you could not reach over the one you edited."
+
+[[rooms.debrief.notes]]
+when = "denied"
+line = "You walked out denying all of it. What they hold points at you and not at an account or an hour, so the denial is a posture to keep, not a way through."
 
 [rooms.disk]
 name = "The laptop's own files"
-desc = "Two years of being carried about, written down by the laptop without anyone meaning to: where it has been, what it talks to, who it talked to today.\nNone of it leaves the machine. Reading it makes no sound at all."
-exits = { out = "office", down = "wire" }
-things = ["routing_table", "ticket_cache", "project_file", "packet_capture"]
+art = '''
+    .----------------------------------------------------------.
+    |  the laptop's own files   -   two years, never cleaned   |
+    |----------------------------------------------------------|
+    |  [=]  routing_table      one static route off the desk   |
+    |  [=]  ticket_cache       when this account is expected   |
+    |  [=]  project_file       controllers, creds, historian   |
+    |  [>]  wireshark          installed, idle                 |
+    '----------------------------------------------------------'
+'''
+desc = "Two years of a contractor's working life have piled up here without anyone meaning to keep them: routing tables, cached tickets, a project file, and the tools of the job.\nNone of it leaves the machine. Reading it makes no sound at all."
+exits = { "access plant network" = "wire" }
+things = ["routing_table", "ticket_cache", "project_file", "wireshark"]
 
 [rooms.wire]
 name = "The plant network"
-desc = "Pumps, valves and level sensors, all talking at once: a reading every few seconds, in plain text, going out to a control room at the works. Nothing in any of it asks who is listening.\nIt has been like this for twenty years."
+art = '''
+         the plant network   ( plain text, unencrypted )
+
+     [HTR-01]    [HTR-02]    [level]    [dosing]    [historian]
+        |           |           |          |             |
+     ===o====.===o==.====o======.===o======.===o=========.====>
+       poll     poll    poll       poll       poll     query
+        |_____________________________________________________|
+                   >>>>>   to the control room   >>>>>
+'''
+dark_art = '''
+   .:. :'. .:. :'. .:. :'. .:. :'. .:. :'. .:. :'.
+   :'.    the wire is live, and you are blind     .:
+   .:. :'. .:. :'. .:. :'. .:. :'. .:. :'. .:. :'.
+   :'.   no capture -- packets you cannot read    .:
+   .:. :'. .:. :'. .:. :'. .:. :'. .:. :'. .:. :'.
+'''
+desc = "Pumps, valves and level sensors, all talking at once: a reading every few seconds, in plain text, to a control room somewhere on the plant.\nThe controllers are still speaking the protocol they were commissioned with, trusting whatever the network hands them."
 dark = true
-exits = { up = "disk", through = "reach" }
-things = ["traffic"]
+exits = { "access laptop" = "disk", "enter boundary zone" = "reach" }
+requires = { "enter boundary zone" = "baseline_taken" }
+hidden = ["enter boundary zone"]
+reasons = { "enter boundary zone" = "You are still working blind. Until you have captured and read the traffic, you cannot pick the boundary machine out of the noise." }
+things = ["traffic", "capture"]
 
 [rooms.reach]
-name = "What this laptop can actually touch"
-desc = "Most of the plant was never reachable from this desk. What is left is a short list.\nOne machine in the boundary zone answers anybody who asks from the office side. Behind it are the ones that move things. From here they look the same.\nThe quiet way in is to know the plant well enough to belong there. The loud way is to ask the boundary machine directly, and hope it does not mind."
-exits = { down = "historian", after = "response", back = "office" }
-requires = { down = "baseline_taken", after = "alarm_raised" }
-holding = { down = ["routing_table"] }
-unless = { down = "alarm_raised", after = "session_closed" }
-hidden = ["after"]
+name = "The boundary zone"
+art = '''
+      office side                                      plant side
+    -----------------          .-------------.       --------------
+     you are here      --->    |  BOUNDARY   |  --->   monitor &
+     (a contractor)            |   MACHINE   |         control
+                               |_____________|         systems
+                              it answers anyone
+                              who asks, and it logs
+                                      |
+                                      '----->  [ the control room sees it ]
+'''
+desc = "Most of the plant was never reachable from this desk. What is left is a short list.\nOne machine in the boundary zone answers from the office side. Behind it are the systems that monitor and control the plant. From here, they are just names and addresses.\nThe quiet way in is to use what the plant already trusts. The loud way is to ask the boundary machine directly, and let it tell the control room you are there."
+exits = { "access historian" = "historian", "use open session" = "response", "access plant network" = "wire" }
+requires = { "access historian" = ["baseline_taken", "route_known"], "use open session" = "alarm_raised" }
+unless = { "access historian" = "alarm_raised", "use open session" = "session_closed" }
+hidden = ["access historian", "use open session"]
+reasons = { "access historian" = "The historian sits behind the plant's own routing. Until you have read the route in, this account cannot reach it." }
 things = ["boundary_box"]
 
+[[rooms.reach.also]]
+when = "alarm_raised"
+desc = "The same short list, but the boundary machine has already told the control room what you asked it. A session is open now, back down the line, and for the first time something on their side is looking back."
+
 [rooms.response]
-name = "What the control room sees"
-desc = "The alarm brought someone. A session has opened from the works, back down the same line you were quiet on, and for as long as it is open you are looking at the plant the way they look at it: which readings they trust, which alarm they chase first, how long it takes a person to walk to a panel.\nThe historian only ever kept what happened. This is what they think is happening. It is worth more, and it costs you the quiet the historian would have let you keep.\nYou are looking at them. They are looking at the boundary. Neither of you has moved yet."
-exits = { back = "reach" }
+name = "The open session"
+art = '''
+    .===========================================================.
+    |  CONTROL ROOM   ( mirrored to you, down the open line )   |
+    |===========================================================|
+    |  ALARMS                      |  TRENDS                    |
+    |   [!] boundary query   <---  |    level  ||||......       |
+    |   [ ] pump 3 running low     |    flow   |||||||...       |
+    |   [ ] nightly backup         |    ~^~._.~^~._.~^~._.~     |
+    |------------------------------+----------------------------|
+    |  operator: on shift          |  you: not on their screen  |
+    '==========================================================='
+'''
+desc = "The alarm brought someone. A session has opened from the works, back down the same line you were quiet on. For as long as it is open, you can see the same console the operator is using: which readings they trust, which alarm they chase first, how long it takes a person to walk to a panel.\nThe historian kept what happened. This is what they think is happening. It is worth more, because it tells you what they are doing next. The quiet is gone.\nYou are looking at them. They are looking at the boundary. Neither of you has moved yet."
+exits = { "enter boundary zone" = "reach", "enter control layer" = "hunt" }
+unless = { "enter control layer" = "session_closed" }
 things = ["console", "alarm"]
+
+[[rooms.response.also]]
+when = "cornered"
+desc = "The view has not changed but your place in it has. The alarm you were watching them not-quite-chase is being chased now, and it is yours. They are no longer looking at the boundary. They are looking for you."
 
 [rooms.historian]
 name = "The historian"
+art = '''
+    .------------------------------------------------------=---.
+    |  H I S T O R I A N    :   what the plant actually did    |
+    |-------------------------------------------------------=--|
+    |   2019 [##########]   2021 [##########]   2023 [######]  |
+    |   2020 [##########]   2022 [##########]   2024 [####  ]  |
+    |------------------------------------------------------=---|
+    |  every reading, every alarm, every valve that moved,     |
+    |  years deep, and still open to this account              |
+    '----------------------------------------------------------'
+'''
 desc = "The machine that writes down what the plant does, so that people who are not standing in it can read it later. Every reading, every alarm, every valve that moved, years deep.\nNothing has asked who you are."
-exits = { up = "reach" }
+exits = { "enter boundary zone" = "reach", "withdraw" = "cleanup" }
+requires = { "withdraw" = "data_secured" }
+hidden = ["withdraw"]
+reasons = { "withdraw" = "Nothing to withdraw with yet. Read the records first." }
+things = ["records"]
+
+[rooms.hunt]
+name = "The control layer"
+art = '''
+       the control layer   :   the machines that move water
+
+       [ HTR-01 ]                           [ HTR-02 ]
+       +-----------+                        +-----------+
+       | setpoint  |                        | setpoint  |
+       |  4.0 mg   |                        |  62 %     |
+       +-----+-----+                        +-----+-----+
+            |                                    |
+         (pump)==O==[valve]===~~~~~===[valve]==(level)
+            |                                    |
+        ~~~~~~~~~~~~~~~~~~~ water ~~~~~~~~~~~~~~~~~~~~
+'''
+desc = "The controllers that actually move water: pumps, valves, level controls and their setpoints, the systems behind the boundary. From here you can reach them. Reading them is quiet; writing to them is not.\nThe alarm is live, though. Someone is responding to it, and every second you spend here is another second they have to find the session.\nEach choice takes something and costs something. Choose what you can still afford."
+exits = { "use open session" = "response", "withdraw" = "cleanup", "run for it" = "cleanup" }
+requires = { "run for it" = "cornered" }
+unless = { "withdraw" = "cornered" }
+hidden = ["withdraw", "run for it"]
+things = ["access", "controllers", "logs", "dosing", "safety"]
+
+[[rooms.hunt.also]]
+when = "cornered"
+desc = "They are on it now. The session that let you watch them is the session they are using to find you. Whatever you are going to take, take it or leave it: there is no version of the next minute where you do both."
+
+[rooms.cleanup]
+name = "The way out"
+art = '''
+        what the investigators get to keep
+
+      +------------+   +------------+   +------------+
+      |  service   |   |   cached   |   |   access   |
+      |   logs     |   |   creds    |   |  patterns  |
+      +-----+------+   +-----+------+   +-----+------+
+            |                |                |
+            '-------.--------+--------.-------'
+                    |   delete?  mislead?     |
+                    |      or just go         |
+                    v                         v
+      =================   E X I T   ==================
+'''
+desc = "Whatever you took and whatever you left behind you, you are moving toward the exit with enough time to decide what the investigators get to keep."
+oneway = true
+things = ["traces"]
+
+[[rooms.cleanup.also]]
+when = "cornered"
+desc = "You did not get out clean. The session is still closing behind you and there is a person on the other end of it now, so whatever you do here you do fast and it shows.\nRemove, mislead, or simply go: there is no longer time to do more than one."
+
+[[rooms.cleanup.also]]
+when = "burned"
+desc = "It is already too late to be nobody. What they have points at you, not at an account or a timeframe, and the only question left is how much of the story you get to write before they write the rest."
+
+[[rooms.cleanup.notes]]
+when = "loud_operation"
+line = "You took everything you could reach on the way in; the hole you leave is not one they will overlook."
+
+[[rooms.cleanup.notes]]
+when = "safety_off"
+line = "And the safety interlock is still disabled behind you, a bad number away from harm whether or not you write it."
+
+[[rooms.cleanup.notes]]
+when = "logs_covered"
+line = "The gap where you cut the logs is its own kind of message: someone was here, and minded which parts they saw."
 
 [things.routing_table]
 name = "routing table"
-desc = "The list of where this laptop sends things. Most of it is what any office machine would have. One line is not: a route somebody added by hand, pointing out of the building at a machine in the plant."
-portable = true
+desc = "Where this laptop sends traffic. Default gateway to 192.168.1.1 (office), one static route out of the building to 10.0.1.1 (boundary machine between office and plant networks). Nothing else reachable directly."
+portable = false
 
 [things.ticket_cache]
 name = "ticket cache"
-desc = "Every door this account opened today, and at what time. Not what it is permitted to open. What it actually did."
-portable = true
+desc = "This account's access log. Historian server 1400-1430 daily, checking plant state before maintenance. VPN to plant 0600-1800 daily. Timesheet system Fridays (billing hours). Nothing else: no email, no file shares, no administrative access. Contractor-scoped."
+portable = false
 
 [things.project_file]
 name = "project file"
-desc = "Somebody's engineering project, saved during the installation and never tidied away. It names the controllers, says where each one sits in its rack, and keeps two passwords in plain text."
-portable = true
+desc = "Water Treatment Automation project, never deleted after commissioning. Controllers: HTR-01 at 10.0.1.20, HTR-02 at 10.0.1.21. Both in rack 3, slots 4-5. Engineering credentials: htr_eng / TW04temp99. Historian server at 10.0.1.30 port 1433."
+portable = false
 
-[things.packet_capture]
-name = "packet capture"
-desc = "A listening tool, left on the laptop by whoever last needed one. It reads what crosses the wire and sends nothing of its own."
-portable = true
-light_when = "capture_running"
+[things.wireshark]
+name = "wireshark"
+desc = "Network analyser, installed and idle on this laptop. Open it here, and it will capture the wire once you are on it."
 
 [things.boundary_box]
 name = "boundary box"
-desc = "The machine in the boundary zone. It answers office-side questions without asking who is asking, but a machine that answers is a machine that logs, and this one faces the control room."
+desc = "The machine in the boundary zone. It answers office-side questions without asking who is asking. It also logs each one, and that log faces the control room."
 
 [things.console]
 name = "console"
@@ -82,47 +323,215 @@ desc = "The operator's own view, mirrored back down the open session. Alarms ran
 
 [things.traffic]
 name = "the traffic"
-desc = "Readings going one way, instructions going the other, and nothing anywhere asking who is sending them."
+desc = "Readings going one way, instructions going the other, and no authentication on either that you can see."
+light_when = "capture_running"
+
+[things.capture]
+name = "the capture"
+desc = "Wireshark, running on the wire, collecting whatever crosses it: controller polling, historian queries, the occasional command."
+
+[things.records]
+name = "the records"
+desc = "The historian's archive, years deep and still open to you. Not what they think is happening, only what happened: every reading, every alarm, every valve that moved, in the plant's own hand."
 
 [things.alarm]
 name = "alarm"
 desc = "The line that turned red when you asked the boundary machine its question, sitting near the top of their list now, waiting to be chased or put down. Watching it costs nothing. Reaching for it would be the first thing you have done on their side of the line rather than your own."
 
+[things.access]
+name = "the data you can reach"
+desc = "Everything the open session puts within reach: readings, records, the state of the plant. The window is closing."
+
+[things.controllers]
+name = "the controllers"
+desc = "HTR-01 and HTR-02, the pumps and valves that actually move the water. Reachable from here, and writable with the engineering credentials the project file gave up."
+
+[things.logs]
+name = "logs"
+desc = "The plant's own record of what happened here, filling with your session as you work."
+
+[things.dosing]
+name = "the dosing setpoints"
+desc = "The chemical dosing on HTR-01 and HTR-02: how much goes into the water, and when. A number you could read, or, with the engineering credentials, a number you could change. A number here is a dose downstream."
+
+[things.safety]
+name = "the safety interlock"
+desc = "The interlock that clamps any setpoint written outside safe limits, and raises the alarm built for exactly that. It is the last thing between a bad number and the water. It, too, can be written."
+
+[things.traces]
+name = "the traces of your presence"
+desc = "Log entries. Cached credentials. Access patterns. The evidence of what you came for."
+
+[actions.read_routing_table]
+verb = "read"
+noun = "routing_table"
+in_room = "disk"
+sets = ["route_known"]
+message = "You read it off the laptop. One static route leaves the building, to the boundary machine between the office and the plant. It is the only thing off this desk that answers, and now you know the way in."
+
+[actions.read_ticket_cache]
+verb = "read"
+noun = "ticket_cache"
+in_room = "disk"
+sets = ["account_known"]
+message = "You read the account's own history: when it is expected on the plant, and when it is not. Now you know the hours in which you are ordinary traffic, and the hours in which you are a flag."
+
+[actions.read_project_file]
+verb = "read"
+noun = "project_file"
+in_room = "disk"
+sets = ["creds_known"]
+message = "You read it through: the controllers, the engineering credentials, where the historian keeps its records. Enough to know what is reachable from the plant side, carried in your head rather than in your hands."
+
+[actions.open_wireshark]
+verb = "open"
+noun = "wireshark"
+in_room = "disk"
+sets = ["wireshark_open"]
+message = "Opened, and idle: nothing worth watching crosses this interface yet. It will, the moment you are on the plant's network."
+
 [actions.start_capture]
 verb = "start"
-noun = "packet_capture"
+noun = "capture"
 in_room = "wire"
-needs = ["packet_capture"]
+when = ["wireshark_open"]
 sets = ["capture_running"]
-message = "It starts listening, and sends nothing of its own. What was noise a moment ago is readable."
+message = "It opens a capture and begins collecting traffic. You see readings from the plant, control commands, routine polling. Nothing is encrypted, and the protocol names the devices, not whoever is sending the commands."
 
 [actions.probe_boundary]
 verb = "probe"
 noun = "boundary_box"
 in_room = "reach"
 sets = ["alarm_raised"]
-message = "It answers at once, which is the trouble: it answers, and then it tells the control room what it was asked. Somewhere out at the works a line turns red.\nThe quiet way down was quiet because nobody was looking. Now somebody is."
+raises = { exposure = 30 }
+message = "It answers at once, which is the trouble: it answers, and then it tells the control room what it was asked. A line turns red in their alarm list.\nThe quiet way down was quiet because nobody was looking. Now somebody is."
 
-[actions.watch_traffic]
-verb = "watch"
+[actions.read_captured_packets]
+verb = "read"
 noun = "traffic"
 in_room = "wire"
 when = ["capture_running"]
 sets = ["baseline_taken"]
-message = "You leave it running and watch a day go past. The same accounts checking in every five minutes. Backups filling the line between one and three in the morning. A shift change at seven, and again at midnight.\nAn ordinary day, written down."
+message = "You review the captured traffic. The pattern is clear: shift changes bring traffic spikes at 0700 and 1900. Backups saturate the link from 0100 to 0300; the traffic is much busier then. The historians query at 1400 and 1430 without fail. The controllers you can see poll every five seconds, in cleartext. Service accounts authenticate at predictable times. The ticket cache told you when this account moves; the traffic shows when everything else does.\nNow you know what ordinary looks like. You can spot when it changes."
 
 [actions.clear_alarm]
 verb = "clear"
 noun = "alarm"
 in_room = "response"
-sets = ["session_closed"]
-goes = "office"
+sets = ["session_closed", "done"]
+goes = "debrief"
 message = "You put the alarm down. It goes quiet in their list, exactly as it would have if they had done it, and that is the tell. Watching sent nothing back up the line. This did.\nThe session closes from the far end, all at once. You are back where you started, on the wrong side of a door you opened yourself, and the way back through the boundary will not open a second time."
+
+[actions.escalate_extraction]
+verb = "push"
+noun = "access"
+in_room = "hunt"
+sets = ["data_secured", "loud_operation"]
+raises = { extraction_progress = 40, pursuit = 30, exposure = 20 }
+message = "You commit. You pull everything you can reach at once, and each one writes an entry as you go.\nYou are moving fast enough that speed is your only cover."
+
+[actions.selective_exfil]
+verb = "read"
+noun = "access"
+in_room = "hunt"
+sets = ["data_secured"]
+raises = { extraction_progress = 20, pursuit = 15, exposure = 10 }
+message = "Selective. Not everything the controllers hold, but the parts that tell the story: the live readings, the setpoints, how the plant is really run. You read what counts and leave the bulk where it sits.\nIt is quieter than reaching for everything, and what you take out is in your head, not your hands."
+
+[actions.plant_backdoor]
+verb = "write"
+noun = "controllers"
+in_room = "hunt"
+when = ["creds_known"]
+sets = ["persistence_installed"]
+raises = { extraction_progress = 5, pursuit = 25, exposure = 15 }
+message = "You install a mechanism for return, a way back in when this door closes. It will be found eventually, but maybe not before you leave.\nIt buys options at the cost of evidence."
+
+[actions.cover_logs]
+verb = "clear"
+noun = "logs"
+in_room = "hunt"
+sets = ["logs_covered"]
+raises = { pursuit = 20, exposure = 5 }
+message = "You cut specific entries out of the log rather than wipe it. A log gone missing reads as a fault; a log with exactly your minutes cut out of it reads as someone who was here and chose what they did not want seen.\nStill, it is quieter than leaving every step in place."
+
+[actions.disable_safety]
+verb = "disable"
+noun = "safety"
+in_room = "hunt"
+when = ["creds_known"]
+sets = ["safety_off"]
+raises = { pursuit = 30, exposure = 40 }
+message = "You write the interlock out of the loop. It will not clamp the next value, and it will not raise the alarm it was built to raise.\nNothing stands between a number and the water now but you."
+
+[actions.raise_dosing]
+verb = "raise"
+noun = "dosing"
+in_room = "hunt"
+when = ["creds_known", "safety_off"]
+sets = ["sabotage", "done"]
+goes = "debrief"
+message = "You move the dosing setpoint from four milligrams a litre to a hundred times that. With the interlock already out of the loop, nothing trims it back: the pump ramps up to meet the number and holds there. Alarms fill the control room, but the one system built to act on its own has already been switched off.\nWhat leaves the plant now carries a dose no one downstream is treating for. There is nothing to tidy here afterwards, and no quiet way back to the desk. You leave."
+
+[actions.deny_everything]
+verb = "disown"
+noun = "traces"
+in_room = "cleanup"
+when = ["cornered"]
+sets = ["denied", "done"]
+goes = "debrief"
+message = "No time to erase and no time to forge. You cut the session yourself, deny it everything, and leave them holding a shape with nobody in it.\nThey will know someone was here. They will not, tonight, be able to say it was you."
+
+[actions.remove_evidence]
+verb = "delete"
+noun = "traces"
+in_room = "cleanup"
+when = ["data_secured"]
+sets = ["evidence_removed", "done"]
+goes = "debrief"
+message = "You remove what you can reach. Log entries disappear. Cached credentials clear. Other records remain.\nIt is not complete erasure. Some of what happened was recorded elsewhere, and some of it was seen by people."
+
+[actions.plant_false_flag]
+verb = "inject"
+noun = "traces"
+in_room = "cleanup"
+when = ["extraction_viable"]
+sets = ["false_flags_planted", "done"]
+goes = "debrief"
+message = "You plant false evidence: log entries suggesting a different account, a different timeframe, a different intent. It is hasty, but it is misdirection.\nThe investigators will find something. You are choosing what."
+
+[actions.accept_loss]
+verb = "leave"
+noun = "traces"
+in_room = "cleanup"
+sets = ["clean_exit", "done"]
+goes = "debrief"
+message = "You leave the traces where they are and go. No erasure, no false trail, nothing added.\nThat restraint is its own signature: someone was here who knew that the cleanest thing to leave is nothing at all."
+
+[actions.read_records]
+verb = "read"
+noun = "records"
+in_room = "historian"
+sets = ["data_secured", "historian_read"]
+raises = { extraction_progress = 20, exposure = 10 }
+message = "You read the records themselves, not the live view of them: what the plant did, in order, going back years. Enough to reconstruct how it runs and when it is watched, read quietly on an account that was allowed to read every line of it.\nNobody raised anything."
+
+[marks.extraction_progress]
+threshold = 20
+sets = "extraction_viable"
+
+[marks.pursuit]
+threshold = 60
+sets = "cornered"
+
+[marks.exposure]
+threshold = 50
+sets = "burned"
 
 [synonyms]
 get = "take"
-run = "start"
-listen = "watch"
+listen = "read"
+watch = "read"
 scan = "probe"
 dismiss = "clear"
 l = "look"

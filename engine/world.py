@@ -228,6 +228,23 @@ def _check_rooms(world, words, flags, errors):
         for direction in _get(room, "hidden", []):
             if direction not in exits:
                 errors.append(_error(words, "hidden_without_exit", room=name, dir=direction))
+        for direction in _get(room, "reasons", {}):
+            if direction not in exits:
+                errors.append(_error(words, "reasons_without_exit", room=name, dir=direction))
+        for variant in _get(room, "also", []):
+            if not isinstance(variant, dict) or not isinstance(variant.get("desc"), str):
+                errors.append(_error(words, "also_bad", room=name))
+                continue
+            flag = variant.get("when")
+            if not isinstance(flag, str) or flag not in flags:
+                errors.append(_error(words, "also_unknown_flag", room=name, flag=flag))
+        for note in _get(room, "notes", []):
+            if not isinstance(note, dict) or not isinstance(note.get("line"), str):
+                errors.append(_error(words, "note_bad", room=name))
+                continue
+            flag = note.get("when")
+            if not isinstance(flag, str) or flag not in flags:
+                errors.append(_error(words, "note_unknown_flag", room=name, flag=flag))
         for thing in _get(room, "things", []):
             if thing not in things:
                 errors.append(_error(words, "room_unknown_thing", room=name, thing=thing))
@@ -321,6 +338,10 @@ def _check_warnings(world, words):
     required |= {flag for _id, room in _records(world, "rooms")
                  for held in _get(room, "unless", {}).values()
                  for flag in many(held)}
+    required |= {variant.get("when") for _id, room in _records(world, "rooms")
+                 for variant in _get(room, "also", []) if isinstance(variant, dict)}
+    required |= {note.get("when") for _id, room in _records(world, "rooms")
+                 for note in _get(room, "notes", []) if isinstance(note, dict)}
     for name, action in _records(world, "actions"):
         for flag in _get(action, "sets", []):
             if flag not in required:

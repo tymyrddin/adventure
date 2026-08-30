@@ -40,16 +40,38 @@ def describe(world, game):
     """Return the room description, or the darkness line."""
     room = world["rooms"][game["location"]]
     if not _lit(world, game):
-        return _text(world, "pitch_dark")
-    lines = [room["name"], "", room["desc"]]
+        blind = [room["dark_art"].rstrip("\n"), ""] if room.get("dark_art") else []
+        return "\n".join(blind + [_text(world, "pitch_dark")])
+    lines = []
+    if room.get("art"):
+        lines += [room["art"].rstrip("\n"), ""]
+    lines += [room["name"], "", _room_desc(world, game, room)]
+    for note in room.get("notes", []):
+        if note.get("when") in game["flags"]:
+            lines += ["", note.get("line", "")]
     here = game["placements"][game["location"]]
+    shown = _visible_exits(game, room)
+    if here or shown:
+        lines.append("")
     if here:
         lines.append(_text(world, "you_can_see",
                            things=", ".join(world["things"][t]["name"] for t in here)))
-    shown = _visible_exits(game, room)
     if shown:
         lines.append(_text(world, "exits", exits=", ".join(shown)))
     return "\n".join(lines)
+
+
+def _room_desc(world, game, room):
+    """Return the room's text for the state it is in now.
+
+    The base desc is the calm, first reading; each `also` variant replaces it while
+    its `when` flag is set, last-wins, so a later phase layers over an earlier one.
+    """
+    desc = room["desc"]
+    for variant in room.get("also", []):
+        if variant.get("when") in game["flags"]:
+            desc = variant.get("desc", desc)
+    return desc
 
 
 def _parse(world, line):
@@ -58,9 +80,32 @@ def _parse(world, line):
              if word not in _builtins(world)["articles"]]
     if not words:
         return []
+    exit_key = _exit_for_phrase(world, " ".join(words))
+    if exit_key is not None:
+        return [exit_key]
     words[0] = world.get("synonyms", {}).get(words[0], words[0])
     words[0] = _builtins(world)["abbreviations"].get(words[0], words[0])
     return words[:1] if len(words) == 1 else [words[0], "_".join(words[1:])]
+
+
+def _exit_for_phrase(world, phrase):
+    """Return the exit a phrase names, ignoring articles, or None.
+
+    The phrase has already had its articles dropped; an exit key keeps its own
+    ("the boundary zone"), so both are compared bare. This lets an exit read as
+    the concrete place it leads to while still matching what the player types,
+    whether or not they include the article.
+    """
+    articles = _builtins(world)["articles"]
+
+    def bare(text):
+        return " ".join(word for word in text.split() if word not in articles)
+
+    for room in world["rooms"].values():
+        for key in room.get("exits", {}):
+            if bare(key) == phrase:
+                return key
+    return None
 
 
 def _resolve(world, game, noun):
@@ -141,15 +186,21 @@ def _move(world, game, direction):
         return _text(world, "no_way", dir=direction)
     gate = room.get("requires", {}).get(direction)
     if gate is not None and not set(many(gate)) <= game["flags"]:
-        return _text(world, "blocked", dir=direction)
+        return _blocked(world, room, direction)
     carried = room.get("holding", {}).get(direction)
     if carried is not None and not set(many(carried)) <= set(game["inventory"]):
-        return _text(world, "blocked", dir=direction)
+        return _blocked(world, room, direction)
     shut = room.get("unless", {}).get(direction)
     if shut is not None and set(many(shut)) & game["flags"]:
         return _text(world, "shut", dir=direction)
     game["location"] = exits[direction]
     return describe(world, game)
+
+
+def _blocked(world, room, direction):
+    """Say a gated exit will not open: the room's own operational reason, or the plain line."""
+    reason = room.get("reasons", {}).get(direction)
+    return reason if isinstance(reason, str) else _text(world, "blocked", dir=direction)
 
 
 def _passable(game, room, direction):
@@ -268,11 +319,18 @@ def _usable(world, verb, lit):
 
 
 def _world_verbs(world, game, seen):
-    """Return this world's own verbs, with the things here they can be used on."""
+    """Return this world's own verbs, with the things here they can be used on.
+
+    An action whose flag conditions are not yet met is withheld: help offers a
+    verb only where trying it would do something, not where it would fall flat.
+    """
     found = {}
-    for action in world.get("actions", {}).values():
+    for name, action in world.get("actions", {}).items():
+        if name in game["fired"]:
+            continue
         where = action.get("in_room")
-        if action["noun"] in seen and where in (None, game["location"]):
+        gated = set(action.get("when", [])) <= game["flags"]
+        if action["noun"] in seen and where in (None, game["location"]) and gated:
             found.setdefault(action["verb"], []).append(_spoken(action["noun"]))
     return list(found.items())
 

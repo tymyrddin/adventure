@@ -580,10 +580,10 @@ def test_two_worlds_differ_in_one_process():
         perform(cave, digging, step)
     assert perform(cave, digging, "take brass lamp") == said(cave, "taken")
     walking = new_game(other)
-    for step in ("begin", "in"):
+    for step in ("begin", "access laptop"):
         perform(other, walking, step)
-    assert perform(other, walking, "take routing table") == said(other, "taken")
-    assert said(other, "taken") != said(cave, "taken")
+    assert perform(other, walking, "inventory") == said(other, "carrying_nothing")
+    assert said(other, "carrying_nothing") != said(cave, "carrying_nothing")
     assert said(other, "pitch_dark") != said(cave, "pitch_dark")
     for world in (cave, other):
         assert set(world["words"]["schema"]["said"]) <= set(

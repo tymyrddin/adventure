@@ -37,6 +37,8 @@ CASES = [
     ("action_unknown_mark.toml", "action ring_bell: unknown mark attention"),
     ("unless_without_exit.toml", "hall: unless on south, but no exit south"),
     ("unless_unknown_flag.toml", "hall: unless flag phantom which nothing ever sets"),
+    ("also_unknown_flag.toml", "hall: also when phantom, which nothing ever sets"),
+    ("note_unknown_flag.toml", "hall: note when phantom, which nothing ever sets"),
     ("bad_threshold.toml",
      "mark attention: threshold is 0; it must be more than nothing"),
 ]
@@ -60,6 +62,20 @@ def test_load_refuses_and_joins(name, line, tmp_path):
     with pytest.raises(WorldError) as caught:
         load(broken(tmp_path, name))
     assert line in str(caught.value).split("\n")
+
+
+def test_also_variant_validates(words):
+    """A room may carry an also variant keyed on a flag some action sets."""
+    world = tomllib.loads(
+        '[meta]\ntitle = "T"\nstart = "hall"\nversion = 1\nending = "seen"\n\n'
+        '[rooms.hall]\nname = "Hall"\ndesc = "A hall."\nexits = { north = "cellar" }\n\n'
+        '[[rooms.hall.also]]\nwhen = "seen"\ndesc = "A hall gone strange."\n\n'
+        '[[rooms.hall.notes]]\nwhen = "seen"\nline = "A bell was rung here."\n\n'
+        '[rooms.cellar]\nname = "Cellar"\ndesc = "A cellar."\n'
+        'exits = { south = "hall" }\nthings = ["bell"]\n\n'
+        '[things.bell]\nname = "bell"\n\n'
+        '[actions.ring]\nverb = "ring"\nnoun = "bell"\nsets = ["seen"]\nmessage = "Ding."\n')
+    assert validate(world, words)[0] == []
 
 
 def test_unparsable_file_is_a_world_error(tmp_path):
@@ -91,7 +107,7 @@ def test_builtin_vocabulary():
     assert builtins == {
         "articles": ["a", "an", "the"],
         "verbs": {
-            "look": {"dark_blocks": True},
+            "look": {},
             "go": {"needs_noun": True, "takes_direction": True},
             "take": {"needs_noun": True, "dark_blocks": True},
             "drop": {"needs_noun": True},

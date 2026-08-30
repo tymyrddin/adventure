@@ -16,91 +16,208 @@ version = 1
 ending = "done"
 
 [rooms.before]
-name = "Welcome!"
-desc = "Before games had graphics they had parsers, and you learned what a world was by typing at it and watching what came back. This is one of those: a world in words, reached through a blinking cursor, on the wager that somewhere in the text there is a way forward.\n\nHere you play the sequence of an attacker's decisions inside a shared cloud tenant, the kind a whole alliance keeps its post on, defended chiefly by the assumption that a platform everyone leans on could not be the way in. Nothing is broken to get here and nothing is dropped. You log in with a borrowed name and become part of the furniture. Each move changes the ground as much as your picture of it: access is not the same as being able to act, a copied secret outlives you while a borrowed identity does not, and everything you touch is written down under the name you borrowed. A quiet operation, built in small steps, can go unseen for months. A greedy one is noticed in a single afternoon, and the response closes doors you were standing in.\n\n'help' lists what can be done where you are, and the list changes as you move; when stuck, it is the first thing to try. Nothing done here touches anything real.\n\nType 'begin' when ready."
+name = "Cloud adventure"
+art = '''
+    ============================================================
+             A   S H A R E D   C L O U D   T E N A N T
+           one alliance, one directory, one borrowed name
+    ============================================================
+        [ identity ]---[ directory ]---[ mailboxes ]
+             |               |               |
+        [ consent  ]    [  groups  ]    [ workloads ]
+             '---------------+---------------'
+             defended chiefly by "surely not the platform"
+'''
+desc = "You play through the sequence of an attacker's decisions inside a shared cloud tenant, the kind a whole alliance keeps its post on, defended chiefly by the assumption that a platform everyone leans on could not be the way in. Nothing is broken to get here and nothing is dropped: you sign in with a borrowed name and become part of the furniture.\n\nEach move changes the ground as much as your picture of it. What you can see is not what you can act on. What you copy outlives you; a borrowed identity does not. Everything you touch is written down under the name you borrowed. The point is not to memorise techniques but to feel the shape of the decision loop: what you observe, what you believe you are inside, what you choose to do, what actually changes, and what that leaves you to decide next.\n\nA quiet operation, built from small and unremarkable steps, can go unseen for months. A greedy one is noticed in a single afternoon, and the response closes doors you were still standing in.\n\n'help' lists what you can do from where you are, and the list changes as you move. When stuck, that is the first thing to try. Nothing here is real.\n\nType 'begin' when ready."
 exits = { begin = "inbox" }
 
 [rooms.inbox]
 name = "A borrowed mailbox"
-desc = "You are logged in as a third assistant under-secretary whose password turned up in an old breach and was never changed. Nothing broke to get here; there was nothing to break. No alarm, no strange process, only ordinary mail and an account exactly as trusted as it was an hour ago.\nOne click away is the identity portal, where an application can be granted the right to read on your behalf. Down the hall is the directory, open to any member for the asking."
-exits = { portal = "portal", hall = "directory", out = "board" }
-requires = { out = "noticed" }
-hidden = ["out"]
+art = '''
+        .--------------------------------------------.
+        |  MAIL   -   u/under-secretary-3            |
+        |--------------------------------------------|
+        |  (o)  ordinary mail, an ordinary morning   |
+        |  ( )  nothing broke; there was nothing to  |
+        |  ( )  break. the old password simply works |
+        '--------------------------------------------'
+            signed in as furniture. the portal, one click
+'''
+desc = "You are logged in as a third assistant under-secretary whose password turned up in an old breach and was never changed. Nothing broke to get here; there was nothing to break. No alarm, no strange process, only ordinary mail and an account exactly as trusted as it was an hour ago.\nThe identity portal is one click away, where an application can be granted the right to read on your behalf. The directory is open to any member who asks: every user, every group, every shared mailbox in the tenant."
+exits = { "open identity portal" = "portal", "open directory" = "directory", "access audit trail" = "board" }
+requires = { "access audit trail" = "noticed" }
+hidden = ["access audit trail"]
 things = ["mail"]
 
 [rooms.portal]
 name = "The identity portal"
+art = '''
+        IDENTITY PORTAL  >  register an application
+        --------------------------------------------
+          name:  [ Billing Reconciliation Helper ]
+          id:    (a name the tenant will keep)
+        --------------------------------------------
+          on its own it can do . . . nothing yet
+          what it may read is one screen further in -->
+'''
 desc = "Where the tenant hands out standing permission. An application registered here is a name the tenant will keep, and on its own it can do nothing; what it may read is decided one screen further in, and that is the screen that matters.\nRegister one under a dull and plausible name, and the consent will survive things the password will not."
-exits = { back = "inbox", in = "scopes" }
-requires = { in = "registered" }
-hidden = ["in"]
+exits = { "open mailbox" = "inbox", "open consent screen" = "scopes" }
+requires = { "open consent screen" = "registered" }
+hidden = ["open consent screen"]
 things = ["app"]
 
 [rooms.scopes]
 name = "The consent screen"
+art = '''
+        THIS APPLICATION WOULD LIKE TO:
+        --------------------------------------------
+          [x]  Read your mail
+          [x]  Read all users
+          [x]  Read on your behalf, always
+        --------------------------------------------
+              (  G R A N T  )  <- one busy click
+          returns a token of its own: long-lived,
+          answering to the app, not to the password
+'''
 desc = "The list of what an application may do on your behalf (read mail, list users) and a single button that grants it. It is the same button a busy administrator gives a dozen times a week without reading it.\nWhat it issues in return are tokens of the application's own, long-lived, answering to the application and not to the password that let you in."
-exits = { out = "portal" }
+exits = { "open identity portal" = "portal" }
 things = ["scopes"]
 
 [rooms.directory]
-name = "Down the hall"
+name = "The directory"
+art = '''
+        DIRECTORY   -   everyone, and every group
+        --------------------------------------------
+          users ............ 4,187
+          groups ........... 612
+          shared mailboxes . named here, in plain sight
+          workloads ........ the tenant's own machinery
+        --------------------------------------------
+          who exists: ordinary to ask
+          all of it, fast: the part that is written down
+'''
 desc = "The directory, listing every user and every group, answering any member who asks. Named here in plain sight are the shared mailboxes the whole ministry can read by default, and the workloads that run the tenant's own machinery.\nAsking the directory who exists is ordinary. Asking it for all of it at once, quickly, is the part that gets written down."
-exits = { back = "inbox", doors = "groups", deeper = "workload" }
-requires = { doors = "mapped", deeper = "mapped" }
-unless = { deeper = "noticed" }
-hidden = ["doors", "deeper"]
+exits = { "open mailbox" = "inbox", "inspect groups" = "groups", "access workload" = "workload" }
+requires = { "inspect groups" = "mapped", "access workload" = "mapped" }
+unless = { "access workload" = "noticed" }
+hidden = ["inspect groups", "access workload"]
 things = ["directory"]
 
 [rooms.groups]
 name = "Who may read what"
+art = '''
+        GROUP                        MAY OPEN
+        --------------------------   -----------------
+        Everyone                     (dull) . . .
+   >    Delegation-Briefings         a shared mailbox
+   >    Counsel-On-Arrangement       a shared mailbox
+        --------------------------   -----------------
+         members:  ... , under-secretary-3 , ...
+         your borrowed name is already on the list
+'''
 desc = "The permissions themselves: which group may open which mailbox, most of it dull, and among the dull a short list that is not. The shared mailboxes are here, and what they are named for (the delegation's briefings, the counsel on the arrangement), and beside each the members who may read it, a list your borrowed name is already on.\nNo break-in stands between you and them. The access was here for the asking; it only had to be found."
-exits = { back = "directory", along = "mailboxes" }
-requires = { along = "doors_found" }
-unless = { along = "noticed" }
-hidden = ["along"]
+exits = { "open directory" = "directory", "access mailboxes" = "mailboxes" }
+requires = { "access mailboxes" = "doors_found" }
+unless = { "access mailboxes" = "noticed" }
+hidden = ["access mailboxes"]
 things = ["permissions"]
 
 [rooms.mailboxes]
 name = "The shared mailboxes"
+art = '''
+        [#]  Delegation Briefings      any member reads
+        [#]  Legal Advice on the arrangement
+        [#]  Minister's Calendar       who meets whom
+        --------------------------------------------
+          a little at a time  ->  under the threshold
+          all at once         ->  over it. no need to hurry
+'''
 desc = "The mailboxes any member may read, which is to say the alliance's briefings, the legal advice on the arrangement, the minister's calendar of who is meeting whom and when.\nA little at a time, none of it crosses the thresholds the loss-prevention rules watch for. All at once, it does. There is no need to hurry."
-exits = { back = "groups", out = "stage" }
-holding = { out = ["post"] }
-unless = { out = "noticed" }
-hidden = ["out"]
+exits = { "inspect groups" = "groups", "access tenant edge" = "stage" }
+holding = { "access tenant edge" = ["post"] }
+unless = { "access tenant edge" = "noticed" }
+hidden = ["access tenant edge"]
 things = ["post"]
 
 [rooms.stage]
 name = "The edge of the tenant"
+art = '''
+        the tenant's ordinary outbound flow, all day
+        ====>=====>=====>=====>=====>=====>=====>=====>
+                         |
+                   [ staged copies ]  set down beside it
+                         |
+         gathering and sending: two acts, two watchers.
+         this is only the first
+'''
 desc = "Where the tenant's own traffic goes out to the wider world all day long, steady and unremarkable. Copies set down here, near that ordinary flow, wait to leave inside it rather than against it.\nGathering them and sending them are two acts, watched by two different things. This is only the first."
-exits = { back = "mailboxes", out = "transfer" }
-requires = { out = "staged" }
-hidden = ["out"]
+exits = { "access mailboxes" = "mailboxes", "access outbound path" = "transfer" }
+requires = { "access outbound path" = "staged" }
+hidden = ["access outbound path"]
 things = ["boundary"]
 
 [rooms.transfer]
 name = "Out with the traffic"
+art = '''
+        ====>=====>=====>   outbound, its everyday shape
+             ||
+             ||   your copies, leaving inside the flow,
+             ||   slow enough never to become a shape
+        ====>=====>=====>   to places it talks to daily
+          at its pace and shape, it leaves without a mark
+'''
 desc = "The outbound path itself, one of a hundred the tenant uses, going to the places it talks to every day. Anything that leaves at its pace and in its shape leaves without a mark.\nWhat is staged behind you is ready. What remains is to let it go slowly enough that it never becomes a shape."
-exits = { back = "stage" }
+exits = { "access tenant edge" = "stage" }
 things = ["channel"]
 
 [rooms.workload]
 name = "A running workload"
+art = '''
+        .------------------------------------------.
+        |  WORKLOAD   (at its quiet job)           |
+        |------------------------------------------|
+        |  managed identity  -> signs as itself    |
+        |  reaches whatever the workload may reach |
+        |  . . . . . . . . . . . . . . . . . . . . |
+        |  secret = "----------"  (pasted, forgot) |
+        '------------------------------------------'
+           two keys, and not the same kind of thing
+'''
 desc = "One of the tenant's own machines, quietly doing its job, and carrying, as they all do, an identity of its own to do it with. The identity is attached here and answers here; it will sign a call as the workload to anything the workload may reach.\nSomeone also pasted a plain secret into the configuration once and forgot it. The two are not the same kind of thing."
-exits = { back = "directory", up = "wider" }
-requires = { up = "assumed" }
-hidden = ["up"]
+exits = { "open directory" = "directory", "access subscription" = "wider" }
+requires = { "access subscription" = "assumed" }
+hidden = ["access subscription"]
 things = ["role", "secret"]
 
 [rooms.wider]
 name = "The whole subscription"
+art = '''
+        one call past its own work, and then:
+        +------------------------------------------+
+        |  SUBSCRIPTION                            |
+        |    every resource . every identity       |
+        |    the standing keys to all of it, at once|
+        +------------------------------------------+
+          reading left a trail. this would not be reading.
+'''
 desc = "What the workload's identity can reach if it reaches past its own work: every resource under the subscription, every other identity, the standing keys to all of it at once.\nIt is one call from where you are, and a different order of thing entirely. Reading has left a trail; this would not be reading."
-exits = { back = "workload" }
+exits = { "access workload" = "workload" }
 things = ["privilege"]
 
 [rooms.board]
 name = "What they see now"
+art = '''
+        AUDIT TRAIL   -   under: under-secretary-3
+        --------------------------------------------
+          10:02  read mail            ok
+          10:03  list users           ok
+          10:05  read all mailboxes   ! anomaly
+          10:06  consent PULLED . sessions KILLED
+        --------------------------------------------
+         password reset x2, "changed nothing" (it never would)
+'''
 desc = "The other side of the glass: the audit trail, every call you made listed under the name you borrowed, and at the top of it the anomaly that was finally too much to miss. The consent is being pulled and the sessions killed as you watch.\nSomeone has reset the borrowed password, twice, and noted with irritation that it changed nothing. It never would have. The password was never what the read depended on. That part they will work out later, or not."
-exits = { back = "inbox" }
+exits = { "open mailbox" = "inbox" }
 
 [things.mail]
 name = "the mail"
@@ -165,7 +282,7 @@ sets = ["registered"]
 message = "You stand up an application under a name that belongs, and the tenant files it without a second look. It exists now, and it can do nothing yet. What it may read is decided one screen on."
 
 [actions.consent]
-verb = "consent"
+verb = "grant"
 noun = "scopes"
 in_room = "scopes"
 sets = ["anchored"]
@@ -231,7 +348,7 @@ get = "take"
 copy = "take"
 list = "sweep"
 enumerate = "sweep"
-grant = "consent"
+consent = "grant"
 read = "check"
 use = "assume"
 widen = "escalate"

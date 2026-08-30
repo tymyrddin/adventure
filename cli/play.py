@@ -90,7 +90,10 @@ def _play(world, commands, transcript):
         command = _read(prompt, pending, transcript)
         if command is None:
             return
+        here = game["location"]
         result = perform(world, game, command)
+        if game["location"] != here and sys.stdout.isatty():
+            print("\033[2J\033[H", end="")
         if result:
             _say(result, transcript)
 

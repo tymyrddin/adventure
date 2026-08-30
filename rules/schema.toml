@@ -46,7 +46,7 @@ optional = { ending = "string" }
 
 [rooms]
 required = { name = "string", desc = "string" }
-optional = { exits = "table", requires = "table", holding = "table", unless = "table", hidden = "array", dark = "boolean", oneway = "boolean", things = "array", x = "integer", y = "integer" }
+optional = { exits = "table", requires = "table", holding = "table", unless = "table", hidden = "array", also = "array", notes = "array", reasons = "table", art = "string", dark_art = "string", dark = "boolean", oneway = "boolean", things = "array", x = "integer", y = "integer" }
 
 [things]
 required = { name = "string" }
