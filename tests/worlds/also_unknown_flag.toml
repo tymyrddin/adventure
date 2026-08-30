@@ -1,0 +1,18 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+exits = { north = "cellar" }
+
+[[rooms.hall.also]]
+when = "phantom"
+desc = "A hall gone strange."
+
+[rooms.cellar]
+name = "Cellar"
+desc = "A cellar."
+exits = { south = "hall" }
