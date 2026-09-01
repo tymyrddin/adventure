@@ -1,30 +1,25 @@
-"""The solver's waves and reachability for the sample world."""
-
 from engine.world import load, reachable_from, solvable
 from tests.conftest import lay_out
 
 # wave 1 opens cave_mouth and debris_room with both flags, wave 2 the grotto.
 EXPECTED_WAVES = [
     {"rooms": ["cave_mouth", "debris_room"], "flags": ["lamp_lit", "rubble_cleared"]},
-    {"rooms": ["grotto"], "flags": []},
+    {"rooms": ["grotto"], "flags": []}
 ]
 
 
 def test_waves(world):
-    """The sample world opens in the two waves, in file order."""
     _rooms, _flags, waves = solvable(load(world))
     assert waves == EXPECTED_WAVES
 
 
 def test_fixed_point(world):
-    """Every room and both flags are reached."""
     rooms, flags, _waves = solvable(load(world))
     assert rooms == {"cave_mouth", "debris_room", "grotto"}
     assert flags == {"lamp_lit", "rubble_cleared"}
 
 
-def test_gated_room_needs_its_flag(world):
-    """Without the action that clears the rubble, the grotto never opens."""
+def test_gate(world):
     loaded = load(world)
     ungated = dict(loaded, actions={"light_lamp": loaded["actions"]["light_lamp"]})
     rooms, _flags, waves = solvable(ungated)
@@ -42,8 +37,7 @@ ORDERED = ('[meta]\ntitle = "O"\nstart = "hall"\nversion = 1\n\n'
            'sets = ["alpha"]\nmessage = "It sounds."\n')
 
 
-def test_a_wave_lists_its_flags_in_file_order(tmp_path):
-    """File order, not alphabetical: the sample world cannot tell the two apart."""
+def test_wave_order(tmp_path):
     _rooms, _flags, waves = solvable(load(lay_out(tmp_path, ORDERED)))
     assert waves[0]["flags"] == ["zeta", "alpha"]
 
@@ -57,7 +51,7 @@ DROPPED = ('[meta]\ntitle = "C"\nstart = "hall"\nversion = 1\n\n'
            'goes = "cell"\nsets = ["fell"]\nmessage = "Down you go."\n')
 
 
-def test_a_goes_room_needs_no_exit_leading_to_it(tmp_path):
+def test_goes(tmp_path):
     """No exit reaches the cell; the action that sends the player there is enough."""
     world = load(lay_out(tmp_path, DROPPED))
     rooms, _flags, _waves = solvable(world)
@@ -65,7 +59,7 @@ def test_a_goes_room_needs_no_exit_leading_to_it(tmp_path):
     assert reachable_from(world, "hall") == {"hall", "cell"}
 
 
-def test_reachable_ignores_gates(world):
+def test_reachable(world):
     """Breadth-first reachability crosses the gated exit the solver has to earn."""
     world = load(world)
     assert reachable_from(world, "cave_mouth") == {"cave_mouth", "debris_room", "grotto"}

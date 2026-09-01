@@ -19,7 +19,6 @@ GOLDEN = pathlib.Path(__file__).parent / "golden"
 
 
 def run(tmp_path, name):
-    """Play the walkthrough script, returning the transcript it wrote."""
     produced = tmp_path / name
     status = main([str(lay_out(tmp_path)),
                    "--script", str(GOLDEN / "walkthrough.script"),
@@ -34,21 +33,124 @@ def started(tmp_path):
     return world, new_game(world)
 
 
-def test_walkthrough_matches_the_golden_transcript(tmp_path, capsys):
-    """The transcript file and stdout both equal the committed bytes."""
+def test_golden(tmp_path, capsys):
     produced = run(tmp_path, "walkthrough.transcript")
     assert produced == (GOLDEN / "walkthrough.transcript").read_bytes()
     assert capsys.readouterr().out.encode() == produced
 
 
-def test_two_runs_are_identical(tmp_path, capsys):
-    """The same world and the same script produce the same bytes every time."""
+def test_defended():
+    """A posture flag makes its action refuse with the blocked text; off, it fires."""
+    world = load(OT)
+    disabled = new_game(world, {"def_sis"})
+    disabled["location"] = "hunt"
+    disabled["flags"].update({"creds_known"})
+    refused = perform(world, disabled, "disable safety")
+    assert "safety_off" not in disabled["flags"]
+    assert refused == world["actions"]["disable_safety"]["blocked"]
+    allowed = new_game(world)
+    allowed["location"] = "hunt"
+    allowed["flags"].update({"creds_known"})
+    perform(world, allowed, "disable safety")
+    assert "safety_off" in allowed["flags"]
+
+
+def test_defended_needs_conditions():
+    """Before the action's own conditions hold, a posture changes nothing."""
+    world = load(OT)
+    game = new_game(world, {"def_sis"})
+    game["location"] = "hunt"
+    assert perform(world, game, "disable safety") == said(world, "no_effect")
+
+
+def test_blocked_raises():
+    """A refusal with blocked_raises leaves marks, and can be tried again at that price."""
+    world = load(OT)
+    game = new_game(world, {"def_alarm_watched"})
+    game["location"] = "reach"
+    for attempt in (1, 2):
+        assert perform(world, game, "probe boundary box") == \
+            world["actions"]["probe_boundary"]["blocked"]
+        assert game["marks"] == {"exposure": 40 * attempt}
+    assert "alarm_raised" not in game["flags"]
+    assert "probe_boundary" not in game["fired"]
+
+
+def test_help_defended():
+    world = load(OT)
+    game = new_game(world, {"def_sis"})
+    game["location"] = "hunt"
+    game["flags"].add("creds_known")
+    assert "disable: safety" in perform(world, game, "help")
+
+
+WITH_DEFENCE = (
+    '[meta]\ntitle = "T"\nstart = "hall"\nversion = 1\nending = "rung"\n\n'
+    '[rooms.hall]\nname = "Hall"\ndesc = "A hall."\noneway = true\n'
+    'things = ["bell"]\n\n'
+    '[things.bell]\nname = "bell"\n\n'
+    '[actions.ring]\nverb = "ring"\nnoun = "bell"\nsets = ["rung"]\n'
+    'unless = ["def_hush"]\nblocked = "It will not ring."\nmessage = "Ding."\n\n'
+    '[defences.def_hush]\nlabel = "a hush over the hall"\n')
+
+
+def test_load_posture(tmp_path):
+    world = load(lay_out(tmp_path, WITH_DEFENCE))
+    plain = new_game(world)
+    perform(world, plain, "save")
+    defended = new_game(world, {"def_hush"})
+    perform(world, defended, "load")
+    assert "def_hush" in defended["flags"]
+    assert perform(world, defended, "ring bell") == "It will not ring."
+    perform(world, defended, "save")
+    plain = new_game(world)
+    perform(world, plain, "load")
+    assert "def_hush" not in plain["flags"]
+
+
+def test_posture_line(tmp_path):
+    where = lay_out(tmp_path, WITH_DEFENCE)
+    produced = tmp_path / "out.transcript"
+    script = tmp_path / "script"
+    script.write_text("ring bell\n")
+    assert main([str(where), "--defend", "def_hush", "--script", str(script),
+                 "--transcript", str(produced)]) == 0
+    lines = produced.read_text().split("\n")
+    assert lines[2] == "In place now: a hush over the hall."
+    assert "It will not ring." in lines
+
+
+def test_bad_posture(tmp_path, capsys):
+    where = lay_out(tmp_path, WITH_DEFENCE)
+    produced = tmp_path / "out.transcript"
+    for spec in (" , ", "def_nothing"):
+        assert main([str(where), "--defend", spec, "--transcript", str(produced)]) == 1
+        assert not produced.exists()
+    assert main([str(where), "--defend", "all,def_nothing", "--script", "/dev/null"]) == 0
+    said_so = capsys.readouterr()
+    assert "choose from: def_hush" in said_so.err
+    assert "no defence called def_nothing" in said_so.err
+
+
+def test_go_phrase():
+    """`go` plus the exit as listed moves the player, articles or not."""
+    world = load(OT)
+    walked = new_game(world)
+    perform(world, walked, "begin")
+    typed = new_game(world)
+    perform(world, typed, "begin")
+    perform(world, walked, "access laptop")
+    perform(world, typed, "go access the laptop")
+    assert typed["location"] == walked["location"] != "before"
+    assert perform(world, typed, "go to the moon") == said(world, "no_way", dir="to moon")
+
+
+def test_deterministic(tmp_path, capsys):
     assert run(tmp_path, "first.transcript") == run(tmp_path, "second.transcript")
     capsys.readouterr()
 
 
-def test_refused_world_exits_one(tmp_path, capsys):
-    """A world that fails validation prints its errors to stderr and exits 1."""
+def test_exit_one(tmp_path, capsys):
     refused = lay_out(tmp_path, (GOLDEN.parent / "worlds" / "start_missing.toml").read_text())
     assert main([str(refused)]) == 1
     captured = capsys.readouterr()
@@ -58,16 +160,14 @@ def test_refused_world_exits_one(tmp_path, capsys):
 
 @pytest.mark.parametrize("flag,named", [("--script", "nowhere.txt"),
                                        ("--transcript", "nowhere/t.txt")])
-def test_a_file_the_player_named_is_reported_not_raised(flag, named, tmp_path, capsys):
-    """A script or transcript that cannot be opened exits one, as a refused world does."""
+def test_bad_file(flag, named, tmp_path, capsys):
     assert main([str(lay_out(tmp_path)), flag, str(tmp_path / named)]) == 1
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "nowhere" in captured.err
 
 
-def test_an_interrupted_game_exits_without_a_traceback(tmp_path, monkeypatch, capsys):
-    """Ctrl-C at the prompt leaves by the conventional code, not by a stack trace."""
+def test_interrupt(tmp_path, monkeypatch, capsys):
     def interrupted():
         raise KeyboardInterrupt
 
@@ -76,15 +176,14 @@ def test_an_interrupted_game_exits_without_a_traceback(tmp_path, monkeypatch, ca
     capsys.readouterr()
 
 
-def test_a_world_can_be_named_instead_of_pointed_at(tmp_path, capsys):
-    """A bare name resolves to content/, so the path need not be typed out."""
+def test_by_name(tmp_path, capsys):
     script = tmp_path / "quit.script"
     script.write_text("quit\n")
     assert main(["original", "--script", str(script)]) == 0
     assert capsys.readouterr().out.startswith(load(ORIGINAL)["meta"]["title"])
 
 
-def test_an_unknown_world_names_the_ones_there_are(capsys):
+def test_unknown_world(capsys):
     """The refusal lists the worlds that exist, rather than echoing a path that does not."""
     assert main(["nowhere"]) == 1
     refused = capsys.readouterr().err
@@ -102,8 +201,7 @@ ENDING = ('[meta]\ntitle = "E"\nstart = "hall"\nversion = 1\n'
           'sets = ["rung"]\nmessage = "It rings, and that is that."\n')
 
 
-def test_a_world_ends_when_it_says_it_does(tmp_path):
-    """The game is over the moment the world remembers what it named as its ending."""
+def test_ending(tmp_path):
     world = load(lay_out(tmp_path, ENDING))
     game = new_game(world)
     assert not game["over"]
@@ -111,7 +209,7 @@ def test_a_world_ends_when_it_says_it_does(tmp_path):
     assert game["over"]
 
 
-def test_a_world_without_an_ending_runs_on(tmp_path):
+def test_no_ending(tmp_path):
     """A world that names no ending is over only when the player says so."""
     world, game = started(tmp_path)
     for command in ("take lamp", "light lamp", "in", "dig rubble", "down"):
@@ -134,7 +232,7 @@ MARKED = ('[meta]\ntitle = "M"\nstart = "hall"\nversion = 1\n'
           'raises = { attention = 2 }\nmessage = "Spent."\n')
 
 
-def test_a_mark_rises_without_crossing_anything(tmp_path):
+def test_mark(tmp_path):
     """What a move leaves behind accumulates quietly until a threshold is reached."""
     world = load(lay_out(tmp_path, MARKED))
     game = new_game(world)
@@ -144,8 +242,7 @@ def test_a_mark_rises_without_crossing_anything(tmp_path):
     assert not game["over"]
 
 
-def test_crossing_a_threshold_is_remembered(tmp_path):
-    """The world remembers the crossing, and this world ends on that memory."""
+def test_threshold(tmp_path):
     world = load(lay_out(tmp_path, MARKED))
     game = new_game(world)
     for _ in range(3):
@@ -155,8 +252,7 @@ def test_crossing_a_threshold_is_remembered(tmp_path):
     assert game["over"]
 
 
-def test_two_moves_price_themselves_differently(tmp_path):
-    """One action leaves more behind than another, and the count reflects it."""
+def test_prices(tmp_path):
     world = load(lay_out(tmp_path, MARKED))
     game = new_game(world)
     perform(world, game, "take token")
@@ -164,8 +260,7 @@ def test_two_moves_price_themselves_differently(tmp_path):
     assert game["marks"]["attention"] == 2
 
 
-def test_a_thing_spent_is_gone(tmp_path):
-    """A thing an action spends is not carried afterwards: it was used up."""
+def test_spends(tmp_path):
     world = load(lay_out(tmp_path, MARKED))
     game = new_game(world)
     perform(world, game, "take token")
@@ -176,7 +271,7 @@ def test_a_thing_spent_is_gone(tmp_path):
                                                         noun="token")
 
 
-def test_a_world_with_no_marks_keeps_none(tmp_path):
+def test_no_marks(tmp_path):
     """Worlds that price nothing carry no counts at all."""
     world, game = started(tmp_path)
     for command in ("take lamp", "light lamp", "in"):
@@ -196,8 +291,7 @@ SHUTS = ('[meta]\ntitle = "S"\nstart = "office"\nversion = 1\n\n'
          'sets = ["tapped"]\nraises = { disruption = 1 }\nmessage = "Tap."\n')
 
 
-def test_a_way_is_open_until_the_world_remembers_it_should_shut(tmp_path):
-    """The mirror of requires: through is open now, and closed once noticed is set."""
+def test_shuts(tmp_path):
     world = load(lay_out(tmp_path, SHUTS))
     game = new_game(world)
     assert perform(world, game, "through").startswith(world["rooms"]["plant"]["name"])
@@ -208,8 +302,7 @@ def test_a_way_is_open_until_the_world_remembers_it_should_shut(tmp_path):
     assert game["location"] == "office"
 
 
-def test_a_shut_way_says_shut_not_blocked(tmp_path):
-    """A way that closed is not a way that never opened; the words differ."""
+def test_shut_line(tmp_path):
     world = load(lay_out(tmp_path, SHUTS))
     game = new_game(world)
     perform(world, game, "tap panel")
@@ -218,8 +311,7 @@ def test_a_shut_way_says_shut_not_blocked(tmp_path):
     assert answer != said(world, "blocked", dir="through")
 
 
-def test_a_way_that_can_shut_is_warned_about(tmp_path):
-    """The solver stays optimistic, so the validator names every way that can close."""
+def test_shut_warning(tmp_path):
     words = data.load(lay_out(tmp_path, name="plain"))
     _errors, warnings = validate(tomllib.loads(SHUTS), words)
     assert any("the way through can shut once noticed" in line for line in warnings)
@@ -237,7 +329,7 @@ BOTH_GATES = ('[meta]\ntitle = "G"\nstart = "fork"\nversion = 1\n\n'
               'sets = ["tripped"]\nmessage = "Flipped."\n')
 
 
-def test_a_hidden_way_is_unlisted_until_it_opens(tmp_path):
+def test_hidden(tmp_path):
     """A hidden exit stays off the exits and help lists until it is genuinely passable."""
     world = load(lay_out(tmp_path, BOTH_GATES))
     game = new_game(world)
@@ -249,8 +341,7 @@ def test_a_hidden_way_is_unlisted_until_it_opens(tmp_path):
     assert "loud" in perform(world, game, "help")
 
 
-def test_one_memory_can_shut_one_way_and_open_another(tmp_path):
-    """The defensive response: the same flag closes the quiet route and opens the loud one."""
+def test_shut_and_open(tmp_path):
     world = load(lay_out(tmp_path, BOTH_GATES))
     game = new_game(world)
     assert perform(world, game, "quiet").startswith(world["rooms"]["kept"]["name"])
@@ -271,8 +362,7 @@ THROWN = ('[meta]\ntitle = "T"\nstart = "office"\nversion = 1\n\n'
           'goes = "office"\nsets = ["noticed"]\nmessage = "Escorted out."\n')
 
 
-def test_an_action_can_put_the_player_somewhere_else(tmp_path):
-    """The costly move: firing the action leaves the player back where they started."""
+def test_goes(tmp_path):
     world = load(lay_out(tmp_path, THROWN))
     game = new_game(world)
     perform(world, game, "in")
@@ -282,7 +372,7 @@ def test_an_action_can_put_the_player_somewhere_else(tmp_path):
     assert answer == "Escorted out.\n" + describe(world, game)
 
 
-def test_an_action_that_stays_put_says_only_its_message(tmp_path):
+def test_stays(tmp_path):
     """Without goes, the reply is the message alone, as it always was."""
     world = load(lay_out(tmp_path, THROWN))
     game = new_game(world)
@@ -292,14 +382,13 @@ def test_an_action_that_stays_put_says_only_its_message(tmp_path):
     assert game["location"] == "server_room"
 
 
-def test_describe_opens_the_game(tmp_path):
-    """A client can describe the starting room without faking a turn."""
+def test_describe(tmp_path):
     world, game = started(tmp_path)
     assert describe(world, game).startswith("Cave mouth\n\n")
     assert game["moves"] == 0
 
 
-def test_quit_ends_the_game(tmp_path):
+def test_quit(tmp_path):
     """The quit verb marks the game over rather than leaving clients to read the reply."""
     world, game = started(tmp_path)
     assert not game["over"]
@@ -307,18 +396,18 @@ def test_quit_ends_the_game(tmp_path):
     assert game["over"]
 
 
-def test_save_and_restore_round_trip(tmp_path):
+def test_save(tmp_path):
     """A saved game restores the location, inventory, flags and placements."""
     world, game = started(tmp_path)
     for command in ("take lamp", "light lamp", "in"):
         perform(world, game, command)
     assert perform(world, game, "save") == said(world, "saved")
+    expected = {key: value for key, value in game.items() if key != "posture"}
     assert restore(tmp_path / "world" / "save.json", content_hash(game["source"]),
-                   world["words"]["messages"]["player"]) == game
+                   world["words"]["messages"]["player"]) == expected
 
 
-def test_restore_rejects_a_different_world(tmp_path):
-    """A save made against other content is refused rather than half applied."""
+def test_restore_other_world(tmp_path):
     world, game = started(tmp_path)
     save(game, tmp_path / "world" / "save.json")
     (tmp_path / "world" / "world.toml").write_text("[meta]\ntitle = 'Other'\n")
@@ -328,8 +417,7 @@ def test_restore_rejects_a_different_world(tmp_path):
     assert str(refused.value) == said(world, "save_mismatch")
 
 
-def test_restore_without_a_save_file(tmp_path):
-    """Loading before saving reports that there is no saved game."""
+def test_restore_missing(tmp_path):
     words = data.load(lay_out(tmp_path))["messages"]["player"]
     with pytest.raises(StateError) as refused:
         restore(tmp_path / "world" / "save.json", "any-hash", words)
@@ -339,9 +427,9 @@ def test_restore_without_a_save_file(tmp_path):
 @pytest.mark.parametrize("payload", [
     {}, {"game": []}, {"game": {"flags": 1}},
     {"game": {"location": "cave_mouth", "inventory": [], "flags": "abc", "fired": [],
-              "moves": 0, "marks": {}, "placements": {}, "over": False}},
+              "moves": 0, "marks": {}, "placements": {}, "over": False}}
 ])
-def test_restore_refuses_a_save_of_the_wrong_shape(payload, tmp_path):
+def test_restore_shape(payload, tmp_path):
     """A file that parses as JSON but is not a save is refused, not half applied."""
     world, game = started(tmp_path)
     path = tmp_path / "world" / "save.json"
@@ -352,7 +440,7 @@ def test_restore_refuses_a_save_of_the_wrong_shape(payload, tmp_path):
     assert str(refused.value) == said(world, "save_mismatch")
 
 
-def test_a_builtin_verb_without_a_handler_is_unknown(tmp_path):
+def test_no_handler(tmp_path):
     """A world adding a verb the engine cannot run is told so, rather than crashing."""
     world = lay_out(tmp_path)
     (world / "builtins.toml").write_text("[verbs.shout]\nneeds_noun = false\n")
@@ -362,15 +450,14 @@ def test_a_builtin_verb_without_a_handler_is_unknown(tmp_path):
     assert game["moves"] == 0
 
 
-def test_every_built_in_verb_reaches_a_handler(tmp_path):
-    """No verb or abbreviation in the data file is missing from the dispatch table."""
+def test_handlers(tmp_path):
     world, game = started(tmp_path)
     builtins = world["words"]["builtins"]
     for verb in list(builtins["verbs"]) + list(builtins["abbreviations"]):
         assert perform(world, game, verb) != f"Unknown verb: {verb}."
 
 
-def test_a_bare_verb_asks_for_what_is_missing(tmp_path):
+def test_bare_verb(tmp_path):
     """A sentence the parser could not finish is not a puzzle refusing to open."""
     world, game = started(tmp_path)
     for verb in ("examine", "take", "drop", "dig"):
@@ -379,8 +466,7 @@ def test_a_bare_verb_asks_for_what_is_missing(tmp_path):
     assert perform(world, game, "go") == said(world, "needs_direction", verb="Go")
 
 
-def test_a_way_stays_shut_until_what_it_asks_for_has_happened(tmp_path):
-    """The flag gate refuses the exit during play, not only in the solver."""
+def test_requires(tmp_path):
     world, game = started(tmp_path)
     perform(world, game, "in")
     assert perform(world, game, "down") == said(world, "blocked", dir="down")
@@ -389,7 +475,7 @@ def test_a_way_stays_shut_until_what_it_asks_for_has_happened(tmp_path):
     assert perform(world, game, "down").startswith(world["rooms"]["grotto"]["name"])
 
 
-def test_a_thing_that_is_not_portable_stays_where_it_is(tmp_path):
+def test_not_portable(tmp_path):
     """Scenery answers with its own refusal and is still in the room afterwards."""
     world, game = started(tmp_path)
     for command in ("take lamp", "light lamp", "in"):
@@ -399,8 +485,7 @@ def test_a_thing_that_is_not_portable_stays_where_it_is(tmp_path):
     assert "rubble" not in game["inventory"]
 
 
-def test_an_action_fires_once_and_then_says_nothing_further(tmp_path):
-    """A once action answers differently the second time, and sets no flag twice."""
+def test_once(tmp_path):
     world, game = started(tmp_path)
     perform(world, game, "take lamp")
     assert perform(world, game, "light lamp") == \
@@ -409,8 +494,7 @@ def test_an_action_fires_once_and_then_says_nothing_further(tmp_path):
     assert game["flags"] == {"lamp_lit"}
 
 
-def test_the_vague_answer_is_kept_for_the_puzzles(tmp_path):
-    """The cases that could give a puzzle away still say nothing useful."""
+def test_no_effect(tmp_path):
     world, game = started(tmp_path)
     perform(world, game, "take lamp")
     assert perform(world, game, "take lamp") == said(world, "no_effect")
@@ -429,8 +513,7 @@ HELD = ('[meta]\ntitle = "H"\nstart = "hall"\nversion = 1\n\n'
         '[things.ring]\nname = "Ring"\nportable = true\n')
 
 
-def test_a_way_may_be_held_shut_until_a_thing_is_carried(tmp_path):
-    """Holding asks what the player carries now, where requires asks what happened."""
+def test_holding(tmp_path):
     loaded = load(lay_out(tmp_path, HELD))
     game = new_game(loaded)
     assert perform(loaded, game, "north") == said(loaded, "blocked", dir="north")
@@ -441,13 +524,11 @@ def test_a_way_may_be_held_shut_until_a_thing_is_carried(tmp_path):
     assert perform(loaded, game, "north") == said(loaded, "blocked", dir="north")
 
 
-def test_the_solver_counts_a_held_way_as_openable(tmp_path):
-    """A way held shut by a reachable thing is not an unreachable room."""
+def test_holding_solvable(tmp_path):
     assert "vault" in load(lay_out(tmp_path, HELD))["rooms"]
 
 
-def test_a_multi_word_noun_is_joined_into_one_id(tmp_path):
-    """A thing called Gold key has the id gold_key, and `take gold key` finds it."""
+def test_noun_join(tmp_path):
     loaded = load(lay_out(tmp_path, '[meta]\ntitle = "K"\nstart = "vault"\nversion = 1\n\n'
                      '[rooms.vault]\nname = "Vault"\ndesc = "A vault."\n'
                      'oneway = true\nthings = ["gold_key"]\n\n'
@@ -465,29 +546,26 @@ TWO_BRASS = ('[meta]\ntitle = "T"\nstart = "hall"\nversion = 1\n\n'
              '[things.brass_bell]\nname = "brass bell"\nportable = true\n')
 
 
-def test_an_unknown_noun_is_reported_in_the_words_the_player_used(tmp_path):
-    """The underscores go back to spaces, so the answer quotes them, not the id."""
+def test_unknown_noun(tmp_path):
     world, game = started(tmp_path)
     assert perform(world, game, "take iron key") == said(
         world, "no_such_thing", noun="iron key")
 
 
-def test_the_name_a_player_reads_is_a_name_they_can_type(tmp_path):
-    """The room says brass lamp, so brass lamp works, whatever the id happens to be."""
+def test_name_typed(tmp_path):
     world, game = started(tmp_path)
     assert perform(world, game, "take brass lamp") == said(world, "taken")
     assert "lamp" in game["inventory"]
 
 
-def test_one_word_is_enough_when_only_one_thing_fits(tmp_path):
-    """A bare word finds the thing it names, the way the old games did."""
+def test_one_word(tmp_path):
     loaded = load(lay_out(tmp_path, HELD))
     game = new_game(loaded)
     assert perform(loaded, game, "take ring") == said(loaded, "taken")
     assert "ring" in game["inventory"]
 
 
-def test_words_that_fit_two_things_are_asked_about(tmp_path):
+def test_which_one(tmp_path):
     """Where the words fit more than one thing here, the game asks rather than guesses."""
     world = load(lay_out(tmp_path, TWO_BRASS))
     game = new_game(world)
@@ -496,8 +574,7 @@ def test_words_that_fit_two_things_are_asked_about(tmp_path):
     assert game["inventory"] == []
 
 
-def test_a_direction_is_never_resolved_as_a_thing(tmp_path):
-    """go north is a way out, not an attempt to find something called north."""
+def test_direction_not_thing(tmp_path):
     world, game = started(tmp_path)
     for command in ("take lamp", "light lamp"):
         perform(world, game, command)
@@ -505,8 +582,7 @@ def test_a_direction_is_never_resolved_as_a_thing(tmp_path):
         world["rooms"]["debris_room"]["name"])
 
 
-def test_help_answers_for_where_the_player_stands(tmp_path):
-    """It lists the ways out and the things here, not the game in general."""
+def test_help(tmp_path):
     world, game = started(tmp_path)
     assert perform(world, game, "help") == (
         "Ways out: in.\n"
@@ -517,8 +593,7 @@ def test_help_answers_for_where_the_player_stands(tmp_path):
         "Short forms: l for look, i for inventory.")
 
 
-def test_help_follows_what_the_player_is_carrying(tmp_path):
-    """Taking something moves it from what can be taken to what can be dropped."""
+def test_help_carried(tmp_path):
     world, game = started(tmp_path)
     perform(world, game, "take lamp")
     said = perform(world, game, "help")
@@ -526,8 +601,7 @@ def test_help_follows_what_the_player_is_carrying(tmp_path):
     assert "drop: lamp." in said
 
 
-def test_help_offers_this_world_s_own_verbs(tmp_path):
-    """A verb the world adds is offered where its thing is, and nowhere else."""
+def test_help_verbs(tmp_path):
     world, game = started(tmp_path)
     perform(world, game, "take lamp")
     assert "light: lamp." in perform(world, game, "help")
@@ -536,8 +610,7 @@ def test_help_offers_this_world_s_own_verbs(tmp_path):
     assert "light" not in perform(world, game, "help")
 
 
-def test_help_withholds_what_the_dark_forbids(tmp_path):
-    """A dark room offers no take and no examine, but still offers the way out."""
+def test_help_dark(tmp_path):
     world, game = started(tmp_path)
     perform(world, game, "in")
     said = perform(world, game, "help")
@@ -546,14 +619,13 @@ def test_help_withholds_what_the_dark_forbids(tmp_path):
     assert "examine:" not in said
 
 
-def test_load_verb_reports_a_missing_save(tmp_path):
+def test_load_missing(tmp_path):
     """The load verb returns the message rather than raising at the player."""
     world, game = started(tmp_path)
     assert perform(world, game, "load") == said(world, "save_missing")
 
 
-def test_a_world_that_says_nothing_is_refused(tmp_path):
-    """There is no shared voice to fall back on, so a silent world does not load."""
+def test_unsaid(tmp_path):
     world = lay_out(tmp_path)
     (world / "messages.toml").unlink()
     with pytest.raises(WorldError) as refused:
@@ -561,8 +633,7 @@ def test_a_world_that_says_nothing_is_refused(tmp_path):
     assert "world says nothing for:" in str(refused.value)
 
 
-def test_a_world_missing_one_line_is_refused_by_that_line(tmp_path):
-    """The refusal names what is unsaid, so the author knows what to write."""
+def test_unsaid_one(tmp_path):
     world = lay_out(tmp_path)
     said_lines = (world / "messages.toml").read_text()
     (world / "messages.toml").write_text(
@@ -572,8 +643,7 @@ def test_a_world_missing_one_line_is_refused_by_that_line(tmp_path):
     assert "goodbye" in str(refused.value)
 
 
-def test_two_worlds_differ_in_one_process():
-    """Each world says every line for itself, and neither world leaks into the other."""
+def test_two_worlds():
     cave, other = load(ORIGINAL), load(OT)
     digging = new_game(cave)
     for step in ("begin",):

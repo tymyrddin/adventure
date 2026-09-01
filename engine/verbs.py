@@ -7,17 +7,15 @@ from engine.world import StateError, many
 
 
 def _builtins(world):
-    """Return the vocabulary bound to this world."""
     return world["words"]["builtins"]
 
 
 def _verbs(world):
-    """Return this world's built-in verbs and their properties."""
     return world["words"]["builtins"]["verbs"]
 
 
 def perform(world, game, line):
-    """Return the complete output for one command line, without a trailing newline."""
+    """One command line in, everything it printed out. No trailing newline."""
     words = _parse(world, line)
     if not words:
         return ""
@@ -62,11 +60,7 @@ def describe(world, game):
 
 
 def _room_desc(world, game, room):
-    """Return the room's text for the state it is in now.
-
-    The base desc is the calm, first reading; each `also` variant replaces it while
-    its `when` flag is set, last-wins, so a later phase layers over an earlier one.
-    """
+    """Return the room's text for the state it is in now."""
     desc = room["desc"]
     for variant in room.get("also", []):
         if variant.get("when") in game["flags"]:
@@ -75,12 +69,13 @@ def _room_desc(world, game, room):
 
 
 def _parse(world, line):
-    """Return the verb and, joined into one id, everything the player said after it."""
     words = [word for word in line.lower().split()
              if word not in _builtins(world)["articles"]]
     if not words:
         return []
-    exit_key = _exit_for_phrase(world, " ".join(words))
+    # TODO an exit key that spells "verb noun" of some action wins here and the action
+    # goes dead. validator doesn't know. hasn't happened yet
+    exit_key = _exit_for_phrase(world, " ".join(words), world["rooms"].values())
     if exit_key is not None:
         return [exit_key]
     words[0] = world.get("synonyms", {}).get(words[0], words[0])
@@ -88,24 +83,19 @@ def _parse(world, line):
     return words[:1] if len(words) == 1 else [words[0], "_".join(words[1:])]
 
 
-def _exit_for_phrase(world, phrase):
-    """Return the exit a phrase names, ignoring articles, or None.
-
-    The phrase has already had its articles dropped; an exit key keeps its own
-    ("the boundary zone"), so both are compared bare. This lets an exit read as
-    the concrete place it leads to while still matching what the player types,
-    whether or not they include the article.
-    """
-    articles = _builtins(world)["articles"]
-
-    def bare(text):
-        return " ".join(word for word in text.split() if word not in articles)
-
-    for room in world["rooms"].values():
+def _exit_for_phrase(world, phrase, rooms):
+    """Return the exit key a phrase names in any of these rooms, articles aside."""
+    said = _bare(world, phrase.replace("_", " "))
+    for room in rooms:
         for key in room.get("exits", {}):
-            if bare(key) == phrase:
+            if _bare(world, key) == said:
                 return key
     return None
+
+
+def _bare(world, text):
+    articles = _builtins(world)["articles"]
+    return " ".join(word for word in text.split() if word not in articles)
 
 
 def _resolve(world, game, noun):
@@ -122,12 +112,10 @@ def _resolve(world, game, noun):
 
 
 def _words_for(world, thing):
-    """Return every word that names a thing: its id, and the name a player reads."""
     return set(thing.split("_")) | set(world["things"][thing]["name"].lower().split())
 
 
 def _spoken(noun):
-    """Return a noun id as the player would have typed it, in words."""
     return noun.replace("_", " ")
 
 
@@ -168,12 +156,10 @@ def _builtin(world, game, verb, noun):
 
 
 def _look(world, game, noun):
-    """Describe the room again."""
     return describe(world, game)
 
 
 def _go(world, game, noun):
-    """Move in the named direction."""
     return _move(world, game, noun)
 
 
@@ -182,6 +168,8 @@ def _move(world, game, direction):
     direction = _builtins(world)["directions"].get(direction, direction)
     room = world["rooms"][game["location"]]
     exits = room.get("exits", {})
+    if direction not in exits:
+        direction = _exit_for_phrase(world, direction, [room]) or _spoken(direction)
     if direction not in exits:
         return _text(world, "no_way", dir=direction)
     gate = room.get("requires", {}).get(direction)
@@ -192,13 +180,13 @@ def _move(world, game, direction):
         return _blocked(world, room, direction)
     shut = room.get("unless", {}).get(direction)
     if shut is not None and set(many(shut)) & game["flags"]:
+        # TODO no per-exit text for this case, reasons is only for the not-yet gates
         return _text(world, "shut", dir=direction)
     game["location"] = exits[direction]
     return describe(world, game)
 
 
 def _blocked(world, room, direction):
-    """Say a gated exit will not open: the room's own operational reason, or the plain line."""
     reason = room.get("reasons", {}).get(direction)
     return reason if isinstance(reason, str) else _text(world, "blocked", dir=direction)
 
@@ -216,7 +204,6 @@ def _passable(game, room, direction):
 
 
 def _visible_exits(game, room):
-    """Return the ways out worth listing: the plain ones, and hidden ones now open."""
     hidden = room.get("hidden", [])
     return [direction for direction in room.get("exits", {})
             if direction not in hidden or _passable(game, room, direction)]
@@ -244,12 +231,10 @@ def _drop(world, game, noun):
 
 
 def _examine(world, game, noun):
-    """Return a thing's description."""
     return world["things"][noun].get("desc", _text(world, "nothing_special"))
 
 
 def _inventory(world, game, noun):
-    """List what the player is carrying, in the order it was taken."""
     if not game["inventory"]:
         return _text(world, "carrying_nothing")
     names = ", ".join(world["things"][t]["name"] for t in game["inventory"])
@@ -271,13 +256,14 @@ def _load(world, game, noun):
     except StateError as refused:
         return str(refused)
     restored["source"] = game["source"]
+    restored["posture"] = game["posture"]
+    restored["flags"] = (restored["flags"] - set(world.get("defences", {}))) | game["posture"]
     game.clear()
     game.update(restored)
     return _text(world, "loaded") + "\n" + describe(world, game)
 
 
 def _quit(world, game, noun):
-    """End the game."""
     game["over"] = True
     return _text(world, "goodbye")
 
@@ -305,7 +291,7 @@ def _to_hand(world, game):
     offered = [
         ("take", [t for t in here if world["things"][t].get("portable", False)]),
         ("drop", list(carried)),
-        ("examine", here + carried),
+        ("examine", here + carried)
     ]
     pairs = [(verb, [_spoken(t) for t in things])
              for verb, things in offered
@@ -314,16 +300,11 @@ def _to_hand(world, game):
 
 
 def _usable(world, verb, lit):
-    """Say whether a built-in verb can be used in the light there is."""
     return lit or not _verbs(world)[verb].get("dark_blocks", False)
 
 
 def _world_verbs(world, game, seen):
-    """Return this world's own verbs, with the things here they can be used on.
-
-    An action whose flag conditions are not yet met is withheld: help offers a
-    verb only where trying it would do something, not where it would fall flat.
-    """
+    """Return this world's own verbs, with the things here they can be used on."""
     found = {}
     for name, action in world.get("actions", {}).items():
         if name in game["fired"]:
@@ -336,7 +317,6 @@ def _world_verbs(world, game, seen):
 
 
 def _free_verbs(world):
-    """Return the built-in verbs that need nothing to act on."""
     return [verb for verb, spec in _verbs(world).items()
             if not spec.get("needs_noun", False)]
 
@@ -350,9 +330,12 @@ def _do_action(world, game, verb, noun):
             return _text(world, "already_done")
         if not _conditions_met(game, action):
             return _text(world, "no_effect")
+        if _defended(game, action):
+            _raises(world, game, action.get("blocked_raises", {}))
+            return action["blocked"]
         game["flags"].update(action["sets"])
         _spends(game, action)
-        _raises(world, game, action)
+        _raises(world, game, action.get("raises", {}))
         if action.get("once", True):
             game["fired"].add(name)
         if "goes" in action:
@@ -363,19 +346,21 @@ def _do_action(world, game, verb, noun):
 
 
 def _spends(game, action):
-    """Remove what the action used up: a thing spent is gone, not carried."""
     for thing in action.get("spends", []):
         while thing in game["inventory"]:
             game["inventory"].remove(thing)
 
 
-def _raises(world, game, action):
-    """Add to what this action leaves behind, and remember any threshold it crosses."""
-    for mark, amount in action.get("raises", {}).items():
+def _raises(world, game, raised):
+    for mark, amount in raised.items():
         game["marks"][mark] = game["marks"].get(mark, 0) + amount
         record = world.get("marks", {}).get(mark)
         if record and game["marks"][mark] >= record["threshold"]:
             game["flags"].add(record["sets"])
+
+
+def _defended(game, action):
+    return bool(set(many(action.get("unless", []))) & game["flags"])
 
 
 def _conditions_met(game, action):
@@ -399,12 +384,10 @@ def _lit(world, game):
 
 
 def _visible(game, noun):
-    """Say whether a thing id names something in the room or the inventory."""
     return noun in game["placements"][game["location"]] or noun in game["inventory"]
 
 
 def _is_direction(world, word):
-    """Say whether a word names a direction in this world."""
     fixed = _builtins(world)["directions"]
     if word in fixed or word in fixed.values():
         return True
@@ -412,12 +395,10 @@ def _is_direction(world, word):
 
 
 def _is_action_verb(world, verb):
-    """Say whether any action uses this verb."""
     return any(action["verb"] == verb for action in world.get("actions", {}).values())
 
 
 def _save_path(world, game):
-    """Return the save file's path, beside the world file."""
     return pathlib.Path(game["source"]).parent / _builtins(world)["files"]["save"]
 
 
@@ -436,5 +417,5 @@ _HANDLERS = {
     "save": _save,
     "load": _load,
     "quit": _quit,
-    "help": _help,
+    "help": _help
 }

@@ -59,7 +59,7 @@ art = '''
         a file      in the clear  on change    on the box
     ~~ not one exploit; each a door built to be left open ~~
 '''
-desc = "However it ended, step back from it, because the shape is worth seeing whole: you arrived as someone the plant already trusted and followed that trust inward, one permitted step after another, until it reached what it was meant to protect. Getting there took no exploit. Each move was a thing the system was built to allow, done by someone it was not built to doubt. What you did once you were in was the only part that was ever a choice. That is the loop, and it closes only where a defender chose to look, so here is where yours ran, and where each step of it could have ended."
+desc = "However it ended, step back from it, because the shape is worth seeing whole: you arrived as someone the plant already trusted and followed that trust inward, one permitted step after another, until it reached what it was meant to protect. Getting there took no exploit. Each move was a thing the system was built to allow, done by someone it was not built to doubt. What you did once you were in was the only part that was ever a choice. That is the loop, and it turns entirely on where someone is looking: it gives way where no one is, and holds where someone is. Here is where yours ran, and where each step of it could have been stopped, or was."
 
 [[rooms.debrief.notes]]
 when = "account_known"
@@ -116,6 +116,43 @@ line = "You left a trail pointing at someone else. It holds only until an invest
 [[rooms.debrief.notes]]
 when = "denied"
 line = "You walked out denying all of it. What they hold points at you and not at an account or an hour, so the denial is a posture to keep, not a way through."
+
+# One per posture.
+[[rooms.debrief.notes]]
+when = "def_vault"
+line = "Tonight the plant's credentials lived in a vault, not in a file on the desk: the road that once ran from a stray project file all the way to the controllers was closed before you started."
+
+[[rooms.debrief.notes]]
+when = "def_alarm_watched"
+line = "Tonight someone sat in front of the alarm list, so the loud way in shut itself the instant it was tried. Whatever you managed tonight, you managed quietly, or not at all."
+
+[[rooms.debrief.notes]]
+when = "def_encrypted"
+line = "Tonight every word between the plant and its controllers was authenticated and encrypted, so the listening that once told you when the plant was watched told you only that it was talking."
+
+[[rooms.debrief.notes]]
+when = "def_least_priv"
+line = "Tonight the historian was scoped to what this account's job actually touches: the quiet read that once took years of plant history in a sitting had nothing to give you."
+
+[[rooms.debrief.notes]]
+when = "def_egress"
+line = "Tonight the boundary watched how much left and how fast, so the bulk grab was never on offer; only a slow, selective trickle would ever have passed."
+
+[[rooms.debrief.notes]]
+when = "def_integrity"
+line = "Tonight the controllers checked their own logic against a signed baseline, so there was no way back in to leave: any change would surface on the very next load."
+
+[[rooms.debrief.notes]]
+when = "def_offbox_logs"
+line = "Tonight the logs shipped off the box as they were written, so the copy you could reach and cut was never the copy that mattered."
+
+[[rooms.debrief.notes]]
+when = "def_sis"
+line = "Tonight the safety system sat on its own isolated network, out of reach from where you stood: the one move that turns harm from hard to trivial was off the table."
+
+[[rooms.debrief.notes]]
+when = "def_analog"
+line = "Tonight a physical limit sat below the dosing setpoint, answering to no one's login, so the last foot of any sabotage had a floor under it that no keyboard could move."
 
 [rooms.disk]
 name = "The laptop's own files"
@@ -381,6 +418,8 @@ verb = "read"
 noun = "project_file"
 in_room = "disk"
 sets = ["creds_known"]
+unless = ["def_vault"]
+blocked = "You open the project file and the credentials are not in it: only a reference to a vault you cannot reach, and a note that they were rotated the day the last contractor's work ended. Whatever this account still opens, it is no longer the plant."
 message = "You read it through: the controllers, the engineering credentials, where the historian keeps its records. Enough to know what is reachable from the plant side, carried in your head rather than in your hands."
 
 [actions.open_wireshark]
@@ -403,6 +442,9 @@ verb = "probe"
 noun = "boundary_box"
 in_room = "reach"
 sets = ["alarm_raised"]
+unless = ["def_alarm_watched"]
+blocked_raises = { exposure = 40 }
+blocked = "You send the probe and it answers, the same as before. This time the red line in the alarm list has someone sitting in front of it: the session is cut at the boundary before it opens, and the account you came in on is flagged where everyone can see it. The loud way in only works for as long as no one is watching it."
 raises = { exposure = 30 }
 message = "It answers at once, which is the trouble: it answers, and then it tells the control room what it was asked. A line turns red in their alarm list.\nThe quiet way down was quiet because nobody was looking. Now somebody is."
 
@@ -412,6 +454,8 @@ noun = "traffic"
 in_room = "wire"
 when = ["capture_running"]
 sets = ["baseline_taken"]
+unless = ["def_encrypted"]
+blocked = "The capture fills and none of it reads. Every message between the plant and its controllers is authenticated and encrypted now: you can see that they are talking, and how often, but not one word of what they say. There is no baseline to build from ciphertext."
 message = "You review the captured traffic. The pattern is clear: shift changes bring traffic spikes at 0700 and 1900. Backups saturate the link from 0100 to 0300; the traffic is much busier then. The historians query at 1400 and 1430 without fail. The controllers you can see poll every five seconds, in cleartext. Service accounts authenticate at predictable times. The ticket cache told you when this account moves; the traffic shows when everything else does.\nNow you know what ordinary looks like. You can spot when it changes."
 
 [actions.clear_alarm]
@@ -427,6 +471,9 @@ verb = "push"
 noun = "access"
 in_room = "hunt"
 sets = ["data_secured", "loud_operation"]
+unless = ["def_egress"]
+blocked_raises = { pursuit = 20, exposure = 20 }
+blocked = "You reach to pull everything at once, and the boundary will not pass it. A volume that size, at that speed, from an account like this, is precisely the shape it now watches for, and it holds the transfer the moment it starts. The bulk grab is gone. A slow, selective trickle might still get out, but not everything, and not tonight."
 raises = { extraction_progress = 40, pursuit = 30, exposure = 20 }
 message = "You commit. You pull everything you can reach at once, and each one writes an entry as you go.\nYou are moving fast enough that speed is your only cover."
 
@@ -444,6 +491,9 @@ noun = "controllers"
 in_room = "hunt"
 when = ["creds_known"]
 sets = ["persistence_installed"]
+unless = ["def_integrity"]
+blocked_raises = { pursuit = 25, exposure = 15 }
+blocked = "You write your way back into the controller and the write is rejected. Its logic is checked against a signed baseline every time it loads, and what you left is not in it: it would be found on the next comparison, so it is found now. There is no quiet corner of this controller to hide in."
 raises = { extraction_progress = 5, pursuit = 25, exposure = 15 }
 message = "You install a mechanism for return, a way back in when this door closes. It will be found eventually, but maybe not before you leave.\nIt buys options at the cost of evidence."
 
@@ -452,6 +502,9 @@ verb = "clear"
 noun = "logs"
 in_room = "hunt"
 sets = ["logs_covered"]
+unless = ["def_offbox_logs"]
+blocked_raises = { exposure = 10 }
+blocked = "The logs that matter are already gone, shipped off the box line by line as they were written. What is in front of you is a shadow copy: clearing it changes nothing at all, except that the act of clearing it is now itself on a record you cannot reach."
 raises = { pursuit = 20, exposure = 5 }
 message = "You cut specific entries out of the log rather than wipe it. A log gone missing reads as a fault; a log with exactly your minutes cut out of it reads as someone who was here and chose what they did not want seen.\nStill, it is quieter than leaving every step in place."
 
@@ -461,6 +514,8 @@ noun = "safety"
 in_room = "hunt"
 when = ["creds_known"]
 sets = ["safety_off"]
+unless = ["def_sis"]
+blocked = "You go for the interlock and there is nothing to take hold of. The safety system sits on its own network now, judged by its own instruments, and it does not take instructions from where you are standing. The one move that turns harm from hard to trivial is simply not on the table any more."
 raises = { pursuit = 30, exposure = 40 }
 message = "You write the interlock out of the loop. It will not clamp the next value, and it will not raise the alarm it was built to raise.\nNothing stands between a number and the water now but you."
 
@@ -470,6 +525,8 @@ noun = "dosing"
 in_room = "hunt"
 when = ["creds_known", "safety_off"]
 sets = ["sabotage", "done"]
+unless = ["def_analog"]
+blocked = "You set the dosing far past any figure the plant would run, and the number is simply ignored. Below the software there is a mechanical stop, sized to the works and answering to no one's login, and it holds the dose where it is no matter what you type. The last foot of this was never going to be reachable from a keyboard."
 goes = "debrief"
 message = "You move the dosing setpoint from four milligrams a litre to a hundred times that. With the interlock already out of the loop, nothing trims it back: the pump ramps up to meet the number and holds there. Alarms fill the control room, but the one system built to act on its own has already been switched off.\nWhat leaves the plant now carries a dose no one downstream is treating for. There is nothing to tidy here afterwards, and no quiet way back to the desk. You leave."
 
@@ -513,6 +570,8 @@ verb = "read"
 noun = "records"
 in_room = "historian"
 sets = ["data_secured", "historian_read"]
+unless = ["def_least_priv"]
+blocked = "You query the historian and it refuses the read. This account's access was scoped down to the handful of tags its own job touches; the request for everything else comes back denied. Years of plant history are still in there. They are simply no longer yours to pull."
 raises = { extraction_progress = 20, exposure = 10 }
 message = "You read the records themselves, not the live view of them: what the plant did, in order, going back years. Enough to reconstruct how it runs and when it is watched, read quietly on an account that was allowed to read every line of it.\nNobody raised anything."
 
@@ -527,6 +586,34 @@ sets = "cornered"
 [marks.exposure]
 threshold = 50
 sets = "burned"
+
+# Postures. Order here is the order the launch line does not use (it sorts).
+[defences.def_vault]
+label = "credentials held in a vault, not in files"
+
+[defences.def_encrypted]
+label = "encrypted, authenticated plant protocols"
+
+[defences.def_alarm_watched]
+label = "someone watching the alarm list"
+
+[defences.def_least_priv]
+label = "least-privilege read on the historian"
+
+[defences.def_egress]
+label = "egress volume monitoring at the boundary"
+
+[defences.def_integrity]
+label = "controller logic checked against a signed baseline"
+
+[defences.def_offbox_logs]
+label = "logs shipped off the box as they are written"
+
+[defences.def_sis]
+label = "the safety system on its own isolated network"
+
+[defences.def_analog]
+label = "a physical limit below the dosing setpoint"
 
 [synonyms]
 get = "take"

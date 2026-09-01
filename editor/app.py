@@ -1,5 +1,3 @@
-"""Flask editor for a world file."""
-
 import os
 import pathlib
 import tomllib
@@ -14,10 +12,10 @@ from engine.world import reachable_from, solvable, validate
 
 _BELOW = [0, 1]
 _SINGULAR = {"rooms": "room", "things": "thing", "actions": "action"}
+_FORMLESS = ("x", "y", "art", "dark_art", "also", "notes", "reasons")
 
 
 def _words(path):
-    """Return the data bound to the world this file belongs to, read afresh."""
     return data.load(pathlib.Path(path).parent)
 
 
@@ -52,7 +50,6 @@ def _read_routes(app, path):
 
     @app.get("/api/world")
     def api_world():
-        """Return the whole world file as JSON, with its modification time."""
         world, unparsable = _read(path)
         if unparsable:
             return jsonify({"errors": [unparsable]}), 422
@@ -78,19 +75,16 @@ def _read_routes(app, path):
 
 
 def _record_routes(app, path, table, insert, remove):
-    """Register create, replace and delete for one of the id tables."""
 
     def create():
         """Create one record from the id and the record the body carries."""
         return _change(path, insert)
 
     def replace(name):
-        """Replace one record."""
         return _change(path, lambda doc, body, words:
                        _replace(doc, table, name, body, words))
 
     def delete(name):
-        """Delete one record, with the refusals."""
         return _change(path, lambda doc, _body, words: remove(doc, name, words))
 
     singular = _SINGULAR[table]
@@ -106,12 +100,10 @@ def _world_routes(app, path):
 
     @app.put("/api/meta")
     def api_meta():
-        """Replace the title and the start room."""
         return _change(path, _set_meta)
 
     @app.put("/api/layout")
     def api_layout():
-        """Write the coordinates of every room the author moved."""
         return _change(path, _set_layout)
 
     @app.put("/api/marks")
@@ -121,7 +113,6 @@ def _world_routes(app, path):
 
 
 def _change(path, apply):
-    """Run one write: the mtime check, the change, the validation gate, the file."""
     words = _words(path)
     body = request.get_json(silent=True)
     if not isinstance(body, dict) or not isinstance(body.get("mtime"), (int, float)):
@@ -150,7 +141,6 @@ def _slug(said, charset):
 
 
 def _identity(table, record, words):
-    """Return the id a record's own naming fields spell."""
     charset = frozenset(words["schema"]["id_chars"])
     if table == "actions":
         return _slug(f"{_get(record, 'verb', '')} {_get(record, 'noun', '')}", charset)
@@ -158,7 +148,6 @@ def _identity(table, record, words):
 
 
 def _free(records, wanted, kind):
-    """Return wanted, stepped past anything already there, or a numbered fallback."""
     for number in range(1, 1000):
         candidate = (wanted or kind) if number == 1 else f"{wanted or kind}_{number}"
         if candidate not in records:
@@ -167,7 +156,6 @@ def _free(records, wanted, kind):
 
 
 def _insert(doc, table, body, words):
-    """Add one record under the id its name spells."""
     record = body.get(_SINGULAR[table])
     if not isinstance(record, dict):
         return _refuse(words, "bad_request", 400)
@@ -182,7 +170,6 @@ def _insert(doc, table, body, words):
 
 
 def _insert_room(doc, body, words):
-    """Add a room, and the exits that join it to the room it was made from."""
     refusal = _insert(doc, "rooms", body, words)
     return refusal if refusal is not None else _connect(doc, body, words)
 
@@ -211,7 +198,6 @@ def _connect(doc, body, words):
 
 
 def _offset(rooms, name, source, direction, words):
-    """Position a new room one spacing from the one it was made from."""
     room = rooms[name]
     if "x" in room and "y" in room:
         return
@@ -222,7 +208,6 @@ def _offset(rooms, name, source, direction, words):
 
 
 def _replace(doc, table, name, body, words):
-    """Replace one record, keeping a room's coordinates when the body omits them."""
     records = _table(doc, table)
     record = body.get(_SINGULAR[table])
     if name not in records:
@@ -230,7 +215,7 @@ def _replace(doc, table, name, body, words):
     if not isinstance(record, dict):
         return _refuse(words, "bad_request", 400)
     if table == "rooms":
-        record = dict(record, **{key: records[name][key] for key in ("x", "y")
+        record = dict(record, **{key: records[name][key] for key in _FORMLESS
                                  if key in records[name] and key not in record})
     records[name] = record
     wanted = _identity(table, record, words)
@@ -283,7 +268,6 @@ def _repoint(doc, table, old, new):
 
 
 def _remove_room(doc, name, words):
-    """Delete a room and the exits that led to it, refusing while an action names it."""
     rooms = _table(doc, "rooms")
     if name not in rooms:
         return _refuse(words, "no_such", 404, table="room", id=name)
@@ -300,11 +284,10 @@ def _remove_room(doc, name, words):
 
 
 def _drop_exits(room, target):
-    """Remove one room's exits to target, and every gate and hiding said of them."""
     for direction in [way for way, to in _get(room, "exits", {}).items()
                       if to == target]:
         del room["exits"][direction]
-        for key in ("requires", "holding", "unless"):
+        for key in ("requires", "holding", "unless", "reasons"):
             if direction in _get(room, key, {}):
                 del room[key][direction]
         while direction in _get(room, "hidden", []):
@@ -337,7 +320,6 @@ def _remove_action(doc, name, words):
 
 
 def _set_marks(doc, body, words):
-    """Replace [marks] with the named counters the body carries, or clear it."""
     marks = body.get("marks")
     if not isinstance(marks, dict):
         return _refuse(words, "bad_request", 400)
@@ -445,50 +427,42 @@ def _pair(rooms, name, direction, target, words):
 
 
 def _stopped(room, direction):
-    """Return whether a direction is conditional, or hidden from the exits line."""
     return (direction in _get(room, "requires", {})
             or direction in _get(room, "holding", {})
             or direction in _get(room, "hidden", []))
 
 
 def _exits(room):
-    """Return a room's exits, adding an empty inline table when it has none."""
     if not isinstance(room.get("exits"), dict):
         room["exits"] = tomlkit.inline_table()
     return room["exits"]
 
 
 def _gates(room, key):
-    """Return a room's requires or holding, adding an empty table when it has none."""
     if not isinstance(room.get(key), dict):
         room[key] = tomlkit.inline_table()
     return room[key]
 
 
 def _writable(doc, name, super_table=True):
-    """Return a top-level table, adding an empty one when the file has none."""
     if not isinstance(doc.get(name), dict):
         doc[name] = tomlkit.table(super_table)
     return doc[name]
 
 
 def _refuse(words, name, status, **fields):
-    """Return the body and the status of one refusal."""
     said = words["reports"]["editor"][name].format(**fields)
     return jsonify({"errors": [said]}), status
 
 
 def _table(doc, name):
-    """Return a top-level table, or an empty one when it is absent or malformed."""
     return _get(doc, name, {})
 
 
 def _records(rooms):
-    """Return the (id, record) pairs of a table, skipping malformed records."""
     return [(name, room) for name, room in rooms.items() if isinstance(room, dict)]
 
 
 def _get(record, key, default):
-    """Return record[key] when it matches the default's type, otherwise the default."""
     value = record.get(key, default)
     return value if isinstance(value, type(default)) else default

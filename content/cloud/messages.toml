@@ -24,9 +24,9 @@ you_can_see = "Here: {things}."
 exits = "From here: {exits}."
 nothing_special = "Nothing in it you have not already read."
 
-no_way = "Nothing goes {dir} from here."
-blocked = "The way {dir} does not open."
-shut = "The way {dir} is closed to you now."
+no_way = "{dir}: not from here."
+blocked = "That does not open for you yet."
+shut = "That is closed to you now."
 pitch_dark = "You cannot see what is here.\nIf you brought something that reads for you, this is the moment to START it."
 too_dark = "You cannot make that out from here."
 
@@ -37,6 +37,8 @@ save_missing = "Nothing saved."
 goodbye = "You sign out."
 
 help_exits = "From here: {dirs}."
+
+posture_active = "The tenant has been hardened since your last run. In place now: {names}. Take the same path again and see how far it goes."
 help_verb = "{verb}: {nouns}."
 help_always = "Anywhere: {verbs}."
 help_short = "Short: {short}."

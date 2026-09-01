@@ -10,7 +10,6 @@ SPACING = 220
 
 
 def read(path):
-    """Return the file at path as a tomlkit document, comments and order intact."""
     with open(path, encoding="utf-8") as handle:
         return tomlkit.parse(handle.read())
 
@@ -49,13 +48,11 @@ def place(world):
 
 
 def _positioned(room):
-    """Return whether a room carries both coordinates, as integers and not booleans."""
     return all(isinstance(room.get(key), int) and not isinstance(room.get(key), bool)
                for key in ("x", "y"))
 
 
 def _rooms(world):
-    """Return the rooms table in file order, skipping anything malformed."""
     rooms = world.get("rooms", {})
     if not isinstance(rooms, dict):
         return {}

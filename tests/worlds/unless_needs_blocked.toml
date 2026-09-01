@@ -1,0 +1,23 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+oneway = true
+things = ["bell"]
+
+[things.bell]
+name = "bell"
+
+[actions.ring]
+verb = "ring"
+noun = "bell"
+sets = ["rung"]
+unless = ["def_hush"]
+message = "Ding."
+
+[defences.def_hush]
+label = "a hush over the hall"

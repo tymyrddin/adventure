@@ -1,5 +1,3 @@
-"""Lays out a world directory for the tests. The rules are found where they always are."""
-
 import pathlib
 
 import pytest
@@ -28,13 +26,11 @@ def broken(tmp_path, name):
 
 
 def said(world, name, **fields):
-    """Return the line this world would say, so a test pins the choice, not the wording."""
     return world["words"]["messages"]["player"][name].format(**fields)
 
 
 @pytest.fixture
 def world(tmp_path):
-    """Return a copy of the sample world as its own directory."""
     return lay_out(tmp_path)
 
 

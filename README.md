@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/tymyrddin/adventure/actions/workflows/ci.yml/badge.svg)](https://github.com/tymyrddin/adventure/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
-[![Code licence: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENCE)
+[![Code licence: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
 [![Worlds licence: CC BY 4.0](https://img.shields.io/badge/worlds-CC%20BY%204.0-blue.svg)](content/LICENCE)
 
 A text adventure engine in the tradition of Colossal Cave and Zork. You type what you want to do, the game describes
@@ -192,7 +192,7 @@ keeps.
 
 ## Licence
 
-This repository is licensed in two parts. The engine and tooling are under the [MIT Licence](LICENCE). The authored
+This repository is licensed in two parts. The engine and tooling are under the [MIT Licence](LICENSE). The authored
 worlds under `content/`, being creative content rather than code, are under [Creative Commons Attribution
 4.0](content/LICENCE). Both let you build on the work with attribution; the split simply lets the code and the worlds
 be reused on their own terms.

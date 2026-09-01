@@ -22,6 +22,7 @@ exits = "Exits: {exits}."
 nothing_special = "Nothing special."
 
 no_way = "There is no way {dir} from here."
+posture_active = "In place now: {names}."
 blocked = "The way {dir} is blocked."
 shut = "The way {dir} is closed now."
 pitch_dark = "It is pitch dark."

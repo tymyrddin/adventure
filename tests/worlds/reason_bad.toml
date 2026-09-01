@@ -1,0 +1,26 @@
+[meta]
+title = "Broken"
+start = "hall"
+version = 1
+
+[rooms.hall]
+name = "Hall"
+desc = "A hall."
+exits = { out = "yard" }
+requires = { out = "opened" }
+reasons = { out = 5 }
+things = ["door"]
+
+[rooms.yard]
+name = "Yard"
+desc = "A yard."
+exits = { in = "hall" }
+
+[things.door]
+name = "door"
+
+[actions.open_door]
+verb = "open"
+noun = "door"
+sets = ["opened"]
+message = "Open."

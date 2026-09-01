@@ -1,7 +1,7 @@
 # The closed content schema A key in neither list is an error, as is a
 # table not named here. Types are TOML's own names.
 
-top_level = ["meta", "rooms", "things", "actions", "marks", "synonyms"]
+top_level = ["meta", "rooms", "things", "actions", "marks", "defences", "synonyms"]
 id_chars = "abcdefghijklmnopqrstuvwxyz0123456789_"
 
 # Every line a world must say for itself. There is no shared voice to fall back
@@ -38,6 +38,7 @@ said = [
     "help_always",
     "help_short",
     "help_pair",
+    "posture_active",
 ]
 
 [meta]
@@ -54,9 +55,14 @@ optional = { desc = "string", portable = "boolean", light_when = "string" }
 
 [actions]
 required = { verb = "string", noun = "string", sets = "array", message = "string" }
-optional = { in_room = "string", needs = "array", when = "array", once = "boolean", raises = "table", spends = "array", goes = "string" }
+optional = { in_room = "string", needs = "array", when = "array", unless = "array", blocked = "string", once = "boolean", raises = "table", blocked_raises = "table", spends = "array", goes = "string" }
 
 # What a move leaves behind. A world names its own: attention, disruption, residue.
 [marks]
 required = { threshold = "integer", sets = "string" }
+optional = { }
+
+# Each id is a flag held from the first move. --defend picks them.
+[defences]
+required = { label = "string" }
 optional = { }

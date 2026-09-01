@@ -15,12 +15,15 @@ class StateError(Exception):
 
 
 _TYPES = {"string": str, "integer": int, "boolean": bool, "array": list, "table": dict}
-_ID_TABLES = ("rooms", "things", "actions", "marks")
+_ID_TABLES = ("rooms", "things", "actions", "marks", "defences")
 
 
 def load(world):
-    """Read the world at this directory, bind its data, validate it, and return it."""
-    words = data.load(world)
+    """Read, bind, validate, return."""
+    try:
+        words = data.load(world)
+    except tomllib.TOMLDecodeError as unparsable:
+        raise WorldError(str(unparsable)) from unparsable
     path = pathlib.Path(world) / words["builtins"]["files"]["world"]
     words["source"] = str(path)
     try:
@@ -42,15 +45,15 @@ def load(world):
 
 
 def validate(world, words):
-    """Return (errors, warnings) as lists of lines."""
     errors = []
     _check_shape(world, words, errors)
     _check_ids(world, words, errors)
     flags = {flag for _id, action in _records(world, "actions")
              for flag in _get(action, "sets", [])}
     flags |= {_get(mark, "sets", "") for _id, mark in _records(world, "marks")} - {""}
+    flags |= set(_table(world, "defences"))
     _check_rooms(world, words, flags, errors)
-    _check_actions(world, words, errors)
+    _check_actions(world, words, flags, errors)
     _check_marks(world, words, errors)
     _check_synonyms(world, words, errors)
     _check_meta(world, words, flags, errors)
@@ -79,13 +82,12 @@ def reachable_from(world, origin):
 
 
 def _goes_from(world, name):
-    """Return where the actions that can fire in this room send the player."""
     return [_get(action, "goes", "") for _id, action in _records(world, "actions")
             if action.get("in_room") in (None, name)]
 
 
 def solvable(world):
-    """Return (rooms, flags, waves): the fixed point and what each iteration opened."""
+    """Fixed point of what a player can reach. waves is what each pass opened."""
     rooms, flags, things, waves = set(), set(), set(), []
     start = _get(_table(world, "meta"), "start", "")
     while True:
@@ -105,7 +107,6 @@ def solvable(world):
 
 
 def _open_rooms(world, rooms, flags, things):
-    """Add the targets of open exits, and the things the known rooms hold."""
     all_rooms = _table(world, "rooms")
     for name, room in _records(world, "rooms"):
         if name not in rooms:
@@ -125,7 +126,6 @@ def _open_rooms(world, rooms, flags, things):
 
 
 def _fire_actions(world, rooms, flags, things):
-    """Add what firing actions leave behind: their flags, and any room goes reaches."""
     all_rooms = _table(world, "rooms")
     for _id, action in _records(world, "actions"):
         in_room = action.get("in_room")
@@ -152,7 +152,7 @@ def _flag_order(world):
 
 
 def _check_shape(world, words, errors):
-    """Report unknown tables, unknown or missing keys, and values of the wrong type."""
+    """Unknown tables, unknown or missing keys, wrong types."""
     schema = words["schema"]
     for key, value in world.items():
         if key not in schema["top_level"]:
@@ -175,7 +175,6 @@ def _check_shape(world, words, errors):
 
 
 def _check_ids(world, words, errors):
-    """Report room, thing and action ids outside the bare-key charset."""
     charset = frozenset(words["schema"]["id_chars"])
     for table in _ID_TABLES:
         for name in _table(world, table):
@@ -228,9 +227,11 @@ def _check_rooms(world, words, flags, errors):
         for direction in _get(room, "hidden", []):
             if direction not in exits:
                 errors.append(_error(words, "hidden_without_exit", room=name, dir=direction))
-        for direction in _get(room, "reasons", {}):
+        for direction, reason in _get(room, "reasons", {}).items():
             if direction not in exits:
                 errors.append(_error(words, "reasons_without_exit", room=name, dir=direction))
+            if not isinstance(reason, str):
+                errors.append(_error(words, "reason_bad", room=name, dir=direction))
         for variant in _get(room, "also", []):
             if not isinstance(variant, dict) or not isinstance(variant.get("desc"), str):
                 errors.append(_error(words, "also_bad", room=name))
@@ -254,12 +255,19 @@ def _check_rooms(world, words, flags, errors):
             placed.add(thing)
 
 
-def _check_actions(world, words, errors):
+def _check_actions(world, words, flags, errors):
     """Report unknown references, empty sets and duplicate verb-noun pairs."""
     rooms = _table(world, "rooms")
     things = _table(world, "things")
+    defences = _table(world, "defences")
     seen = {}
     for name, action in _records(world, "actions"):
+        for flag in _get(action, "unless", []):
+            if flag not in flags:
+                errors.append(_error(words, "action_unless_unknown_flag", id=name, flag=flag))
+        defended = any(flag in defences for flag in _get(action, "unless", []))
+        if defended and not _get(action, "blocked", ""):
+            errors.append(_error(words, "unless_needs_blocked", id=name))
         in_room = action.get("in_room")
         if in_room is not None and in_room not in rooms:
             errors.append(_error(words, "action_unknown_room", id=name, room=in_room))
@@ -270,9 +278,10 @@ def _check_actions(world, words, errors):
         for thing in [noun] + _get(action, "needs", []) + _get(action, "spends", []):
             if thing and thing not in things:
                 errors.append(_error(words, "action_unknown_thing", id=name, thing=thing))
-        for mark in _get(action, "raises", {}):
-            if mark not in _table(world, "marks"):
-                errors.append(_error(words, "action_unknown_mark", id=name, mark=mark))
+        for key in ("raises", "blocked_raises"):
+            for mark in _get(action, key, {}):
+                if mark not in _table(world, "marks"):
+                    errors.append(_error(words, "action_unknown_mark", id=name, mark=mark))
         if "sets" in action and not _get(action, "sets", []):
             errors.append(_error(words, "action_empty_sets", id=name))
         verb = _get(action, "verb", "")
@@ -308,7 +317,6 @@ def _check_meta(world, words, flags, errors):
 
 
 def _check_marks(world, words, errors):
-    """Report a mark whose threshold nothing could ever cross."""
     for name, mark in _records(world, "marks"):
         threshold = mark.get("threshold")
         if isinstance(threshold, int) and not isinstance(threshold, bool) and threshold < 1:
@@ -332,7 +340,7 @@ def _check_warnings(world, words):
                 for needed in _get(room, "requires", {}).values()
                 for flag in many(needed)}
     required |= {flag for _id, action in _records(world, "actions")
-                 for flag in _get(action, "when", [])}
+                 for key in ("when", "unless") for flag in _get(action, key, [])}
     required |= {_get(thing, "light_when", "") for _id, thing in _records(world, "things")}
     required |= {_get(_table(world, "meta"), "ending", "")}
     required |= {flag for _id, room in _records(world, "rooms")
@@ -355,36 +363,36 @@ def _check_warnings(world, words):
             for flag in many(held):
                 warnings.append(_warning(words, "way_can_shut",
                                          room=name, dir=direction, flag=flag))
+        gated = set(_get(room, "requires", {})) | set(_get(room, "holding", {}))
+        for direction in _get(room, "reasons", {}):
+            if direction not in gated:
+                warnings.append(_warning(words, "reasons_without_gate",
+                                         room=name, dir=direction))
     return warnings
 
 
 def _error(words, name, **fields):
-    """Return one error line."""
     return words["reports"]["errors"][name].format(**fields)
 
 
 def _warning(words, name, **fields):
-    """Return one warning line."""
     return words["reports"]["warnings"][name].format(**fields)
 
 
 def _records(world, table):
-    """Return the (id, record) pairs of a top-level table, skipping malformed records."""
     return [(name, record) for name, record in _table(world, table).items()
             if isinstance(record, dict)]
 
 
 def _table(world, name):
-    """Return a top-level table, or an empty one when it is absent or malformed."""
     return _get(world, name, {})
 
 
 def many(value):
-    """Return one condition or a list of them as a list, so callers need not care."""
     return list(value) if isinstance(value, list) else [value]
 
 
 def _get(record, key, default):
-    """Return record[key] when it matches the default's type, otherwise the default."""
+    """record[key] if it has the default's type, else the default."""
     value = record.get(key, default)
     return value if isinstance(value, type(default)) else default

@@ -24,7 +24,7 @@ you_can_see = "Here: {things}."
 exits = "From here: {exits}."
 nothing_special = "Nothing in it you have not already read."
 
-no_way = "Nothing goes {dir} from here."
+no_way = "{dir}: not from here."
 blocked = "That way does not open yet."
 shut = "That way is closed now."
 pitch_dark = "The session is a wall of arriving claims, too fast to read.\nIf you brought something that listens, this is the moment to START it."
@@ -37,6 +37,8 @@ save_missing = "Nothing saved."
 goodbye = "You tear down the session."
 
 help_exits = "From here: {dirs}."
+
+posture_active = "The upstreams have tightened their filters since your last run. In place now: {names}. Announce the same routes again and see which still carry."
 help_verb = "{verb}: {nouns}."
 help_always = "Anywhere: {verbs}."
 help_short = "Short: {short}."

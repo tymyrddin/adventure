@@ -1,5 +1,3 @@
-"""Reads the system's own tables, with a world's own laid over them."""
-
 import pathlib
 import tomllib
 
@@ -9,7 +7,6 @@ OWN = ("messages",)
 
 
 def load(world):
-    """Return the shared tables with this world's laid over them, and its own words."""
     here = pathlib.Path(world)
     words = {name: _over(read(RULES, name), read(here, name)) for name in SHARED}
     return words | {name: read(here, name) for name in OWN}
@@ -21,11 +18,14 @@ def read(directory, name):
     if not path.is_file():
         return {}
     with open(path, "rb") as handle:
-        return tomllib.load(handle)
+        try:
+            return tomllib.load(handle)
+        except tomllib.TOMLDecodeError as unparsable:
+            raise tomllib.TOMLDecodeError(f"{path}: {unparsable}") from unparsable
 
 
 def _over(base, own):
-    """Return the rules with the world's own tables merged into them, one level deep."""
+    """Merge, one level deep. Deeper than that nobody has needed."""
     merged = dict(base)
     for key, value in own.items():
         merged[key] = (dict(merged[key], **value)

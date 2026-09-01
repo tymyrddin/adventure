@@ -34,6 +34,8 @@ save_missing = "No saved game found."
 goodbye = "Goodbye."
 
 help_exits = "Ways out: {dirs}."
+
+posture_active = "Something has been done about the cave since you were last in it. Now in place: {names}."
 help_verb = "{verb}: {nouns}."
 help_always = "Always: {verbs}."
 help_short = "Short forms: {short}."

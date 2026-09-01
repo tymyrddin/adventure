@@ -10,6 +10,7 @@ unless_without_exit = "{room}: unless on {dir}, but no exit {dir}"
 holding_without_exit = "{room}: holding on {dir}, but no exit {dir}"
 hidden_without_exit = "{room}: hidden lists {dir}, but no exit {dir}"
 reasons_without_exit = "{room}: reasons on {dir}, but no exit {dir}"
+reason_bad = "{room}: the reason for {dir} is not text"
 also_bad = "{room}: an also entry has no desc text"
 also_unknown_flag = "{room}: also when {flag}, which nothing ever sets"
 note_bad = "{room}: a note has no line text"
@@ -21,6 +22,8 @@ action_unknown_room = "action {id}: unknown room {room}"
 goes_unknown_room = "action {id}: goes to unknown room {room}"
 action_unknown_thing = "action {id}: unknown thing {thing}"
 action_empty_sets = "action {id}: empty sets"
+action_unless_unknown_flag = "action {id}: unless {flag}, which nothing ever sets"
+unless_needs_blocked = "action {id}: a defence in unless, but no blocked text"
 duplicate_verb_noun = "actions {first} and {second}: duplicate verb-noun pair {verb} {noun}"
 synonym_unknown_target = "synonym {word}: unknown target {target}"
 unknown_key = "unknown key {key} in {path}"
@@ -41,6 +44,7 @@ no_exits = "{room}: no exits and not marked oneway"
 thing_unused = "thing {thing}: defined but never placed and never needed"
 mark_unrequired = "mark {mark}: sets {flag}, which nothing requires"
 flag_unrequired = "flag {flag}: set by {action} but never required"
+reasons_without_gate = "{room}: a reason for {dir}, but nothing gates it"
 way_can_shut = "{room}: the way {dir} can shut once {flag} is remembered; the solver assumes you cross it first"
 
 # Refused by the editor before the validator is reached. Read by
@@ -48,6 +52,9 @@ way_can_shut = "{room}: the way {dir} can shut once {flag} is remembered; the so
 # Said by the player at the command line.
 [cli]
 no_such_world = "no world called {name}; content holds: {worlds}"
+no_such_defence = "no defence called {name} in {world}; it offers: {defences}"
+no_defences = "{world} declares no defences to switch on"
+empty_posture = "--defend names nothing; choose from: {defences}"
 
 [editor]
 stale = "File changed on disk since load."

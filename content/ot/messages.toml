@@ -24,7 +24,7 @@ you_can_see = "Here: {things}."
 exits = "From here: {exits}."
 nothing_special = "Nothing in it you have not already read."
 
-no_way = "Nothing goes {dir} from here."
+no_way = "{dir}: not from here."
 blocked = "That way does not open yet."
 shut = "That way is closed now."
 pitch_dark = "Nothing answers. You are working blind.\nIf you have Wireshark open, this is the moment to start a capture."
@@ -37,6 +37,8 @@ save_missing = "Nothing saved."
 goodbye = "You close the laptop."
 
 help_exits = "From here: {dirs}."
+
+posture_active = "The plant has been hardened since your last run. In place now: {names}. Play it again, and see how far the same moves get you."
 help_verb = "{verb}: {nouns}."
 help_always = "Anywhere: {verbs}."
 help_short = "Short: {short}."
