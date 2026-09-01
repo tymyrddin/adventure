@@ -1,9 +1,3 @@
-# Everything this world says. Quiet and procedural: the table answers, the upstream
-# repeats, and nothing volunteers what any of it means.
-#
-# The dark line does real work. In the session, with the listener idle, a player can be
-# stuck with no way to guess the verb, so the line says the verb.
-
 [player]
 prompt = "> "
 

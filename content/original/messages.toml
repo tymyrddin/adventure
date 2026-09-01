@@ -1,6 +1,3 @@
-# Everything the cave says. Terse, dry, and unhelpful in the way the tradition is
-# unhelpful: the room tells you what is there, and nothing tells you what it is for.
-
 [player]
 prompt = "> "
 

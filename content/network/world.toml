@@ -1,10 +1,3 @@
-# The routing world, on the machinery under the internet. The shape comes from the
-# first-level leaf pages of red/source/docs/loops/: map/trust.md and map/dependency.md
-# for the spine, standing/first-look.md for the passive read, change/observer-effect.md
-# for what an announcement leaves behind, and the defensive closings are the real ones
-# from blue/source/docs/counter/network/exposure.md (RPKI origin validation, prefix
-# filters). The words are the game's own. Nothing here is explained; it is shown.
-
 [meta]
 title = "I Promise the Route Is Good"
 start = "before"

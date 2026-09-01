@@ -1,9 +1,3 @@
-# Everything this world says. Quiet and administrative: the tenant answers every request
-# as designed, and nothing volunteers that anything is wrong.
-#
-# There is no dark room in this world, so pitch_dark and too_dark are written but never
-# reached. The schema still asks for them, and a world says all of its own lines.
-
 [player]
 prompt = "> "
 

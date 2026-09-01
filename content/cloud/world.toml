@@ -1,14 +1,3 @@
-# The cloud world, fuller version: a whole quiet operation, decomposed into the phases the
-# scenario runs through (access, persistence, lateral, collection, paced exfil), each a
-# short sub-sequence of gated sub-moves rather than a single command. The shape comes from
-# the first-level loop leaves of red/source/docs/loops/ (position/access-to-capability.md,
-# value/reading-what-was-shut.md, value/pacing.md), the arc from
-# blue/source/docs/scenarios/cloud-identity-exfil.md, and the real closings from
-# blue/source/docs/counter/cloud/ (revoke the app consent, the anomaly threshold that
-# notices, the reset that changes nothing). The words are the game's own. There is no dark
-# room here on purpose: the terrain's dread is that it is all lit, readable, and logged, and
-# nothing looks wrong.
-
 [meta]
 title = "I Promise I Belong Here"
 start = "before"

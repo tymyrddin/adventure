@@ -1,9 +1,3 @@
-# Everything this world says. Quiet, procedural, after hours: the laptop answers, and
-# nothing volunteers what any of it means.
-#
-# The dark line does real work. It is the one moment a player can be stuck with no way
-# to guess the verb, so it says the verb.
-
 [player]
 prompt = "> "
 

@@ -1,7 +1,3 @@
-# The standing loop on OT terrain. The shape comes from the first-level leaf pages of
-# red/source/docs/loops/standing/ (footing.md, first-look.md, reach.md), but the words
-# are the game's own. Nothing here is explained to the player; it is shown to them.
-
 [meta]
 title = "I Promise I'm a Qualified Engineer"
 start = "before"
